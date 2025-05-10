@@ -1,0 +1,39 @@
+# === Python / Django ===
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+*.pot
+*.pyc
+db.sqlite3
+
+# Environment files
+.env
+*.env
+
+# Django secret/config files
+secrets.json
+
+# === Node.js ===
+quiverpay/node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# === IDEs and Editors ===
+.vscode/
+.idea/
+
+# === OS-specific files ===
+.DS_Store
+Thumbs.db
+
+# === Build artifacts ===
+build/
+dist/
+*.egg-info/
+.eggs/

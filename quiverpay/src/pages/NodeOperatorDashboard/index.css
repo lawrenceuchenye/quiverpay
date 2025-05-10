@@ -1,0 +1,27 @@
+.userDashboard{
+    display:flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+
+.dataContainer{
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    width:70%;
+}
+
+@media(max-width:1200px){
+
+    .userDashboard{
+        flex-direction: column-reverse;
+    }
+
+    .dataContainer{
+        min-width:360px;
+        justify-content: center;
+        flex-direction: column-reverse;
+    }
+    
+}

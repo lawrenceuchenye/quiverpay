@@ -1,0 +1,60 @@
+
+
+.tab{
+    width:max-content;
+    height: max-content;
+    background: #fff;
+    border-radius: 8px;
+    padding:20px 15px;
+    margin:20px auto;
+    text-align: center;
+    box-shadow: 0 2px 4px 2px rgba(0,0,0,0.1);
+}
+
+.tab h1{
+    font-family: "limelight";
+    font-size: 45px;
+}
+
+.tab h3{
+    font-family: "Poppins";
+    background:rgba(255, 200, 0, 0.4);
+    padding:4px 8px;
+    border-radius: 8px;
+    color:rgba(153, 133, 30, 1);
+    font-weight: 800;
+}
+
+
+
+.s-tab{
+    width:max-content;
+    height: max-content;
+    background: #fff;
+    border-radius: 8px;
+    padding:20px 15px;
+    margin:20px auto;
+    text-align: center;
+    box-shadow: 0 2px 4px 2px rgba(0,0,0,0.1);
+}
+
+.s-tab h1{
+    font-family: "limelight";
+    font-size: 45px;
+}
+
+.s-tab h3{
+    font-family: "Poppins";
+    background:rgba(50, 180, 100, 0.4)
+    ;
+    padding:4px 8px;
+    border-radius: 8px;
+    color:rgba(50, 180, 100, 1);
+    font-weight: 800;
+}
+
+.statsContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

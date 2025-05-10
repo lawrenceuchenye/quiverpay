@@ -1,0 +1,125 @@
+.main-hmContainer{
+   padding: 18px 60px;
+   display:flex;
+   justify-content: space-between;
+   align-items: center;
+}
+
+.txt-container{
+    width:50%;
+}
+
+.hm-hero-txt{
+    font-family: "Poppins";
+    font-size: 76px;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.hm-hero-txt span{
+    font-family: "limelight";
+}
+
+.txt-container button{
+    background-color: black;
+    color:white;
+    border-radius:8px;
+    padding:10px 16px;
+    width:180px;
+    margin: 20px 0;
+    text-transform: uppercase;
+}
+
+
+.hm-paneContainer{
+    position: relative;
+    width:50%;
+    transform: translate(50px,-40px);
+}
+
+.hm-paneContainer div{
+    width:300px;
+    height:300px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2)),url("../../assets/stablecoinpic.png");
+    background-position: center;
+    background-size: cover;
+    box-shadow: 0 2px 4px 2px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    left:0px;
+    top:-50px;
+}
+
+.hm-paneContainer div:nth-child(1){
+    position:absolute;
+    transform: translateX(200px);
+    top:80px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2)),url("../../assets/net.jpg");
+    background-position: center;
+    background-size: cover;
+    z-index:10;
+}
+
+.parent-hmContainer .slogan{
+    text-align:center;
+    position: relative;
+    top:60px;
+    font-family: "Poppins";
+    font-weight: 600;
+    margin-bottom:60px;
+}
+
+
+@media (max-width:1200px) {
+    .main-hmContainer{
+        display: block;
+         padding: 18px 50px;
+     }
+
+    .txt-container{
+        width: 100%;
+      
+    }
+    
+    .txt-container p{
+        font-size: 12px;
+        width:100%;
+        word-break: break-all;
+    }
+
+    .txt-container h1{
+        font-size: 35px;
+        margin: 12px 0;
+    }
+
+.parent-hmContainer .slogan{
+    text-align:center;
+    position: relative;
+    top:160px;
+    font-family: "Poppins";
+    font-weight: 600;
+}
+
+    .hm-paneContainer{
+    width:100%;
+transform: translate(50px,40px);
+    }
+
+    .hm-paneContainer div{
+        width:150px;
+        height:150px;
+    }
+     
+    
+.hm-paneContainer{
+    position: relative;
+    left:-45px;
+    top:0px;
+    
+}
+
+.hm-paneContainer div:nth-child(1){
+    position:absolute;
+    transform: translateX(135px);
+}
+}
+

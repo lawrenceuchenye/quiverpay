@@ -1,0 +1,28 @@
+
+
+.header{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.header h2{
+    font-family: "Poppins";
+    font-weight:600;
+    text-transform: uppercase;
+}
+
+.txContainerHolder{
+    width:85%;
+    margin: 10px auto;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 8px;
+    box-shadow: 0 2px 4px 2px rgba(0,0,0,0.1);
+}
+
+.txContainerHolder hr{
+    margin: 10px auto;
+    width:95%;
+    color:oklch(86.9% 0.022 252.894);
+}

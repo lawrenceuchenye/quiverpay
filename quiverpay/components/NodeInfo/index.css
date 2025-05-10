@@ -1,0 +1,350 @@
+.infoHolder{
+    text-align:left;
+    width:70%;
+}
+
+
+.infoHolder h1{
+    font-weight: 600;
+    font-size: 25px;
+    font-family: "Poppins";
+}
+
+.infoHolder h1 i{
+    margin-left:10px;
+    cursor:pointer;
+}
+
+.uf-Header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+
+.cardContainer{
+    width:330px;
+    height:max-content;
+    border-radius:20px;
+    background:#0052FF;
+    padding: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+
+
+.infoCardContainer{
+    width:330px;
+    height:max-content;
+    border-radius:20px;
+    background:#6A0DAD;
+    padding: 15px;
+    overflow: hidden;
+    position: relative;
+    margin-top: 10px;
+    color:#fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+
+.infoCardContainer .infoData{
+    margin-bottom: 10px;
+}
+.infoCardContainer h1{
+    font-size: 12px;
+    position: relative;
+    z-index: 3;
+}
+
+
+.cardContainer .blob{
+  width:160px;
+  height:160px;
+  border-radius: 50%;
+  background: oklch(48.8% 0.243 264.376);
+  position:absolute;
+  top:0;
+}
+
+
+.cardContainer .blob-2{
+    width:160px;
+    height:160px;
+    border-radius: 50%;
+    background: oklch(48.8% 0.243 264.376);
+    position:absolute;
+    right:0;
+    top:70px;
+  }
+
+
+  
+.infoCardContainer .blob-2{
+    width:160px;
+    height:160px;
+    border-radius: 50%;
+    background: oklch(48.8% 0.243 264.376);
+    position:absolute;
+    top:80px;
+  }
+  
+  
+  .infoCardContainer .blob{
+      width:160px;
+      height:160px;
+      border-radius: 50%;
+      background: oklch(48.8% 0.243 264.376);
+      position:absolute;
+      right:0;
+      top:0px;
+    }
+  
+
+.infoCardContainer p{
+    position: relative;
+    z-index: 3;
+}
+
+.cardContainer p{
+    font-size: 12px;
+    color:#fff;
+    font-family: "Poppins";
+    margin:0 25px;
+    position: relative;
+    z-index: 3;
+   
+}
+
+.infoCardContainer h1{
+    font-weight: 600;
+    font-size: 12px;
+    font-family: "Poppins";
+}
+
+.cardContainer h2{
+    color:#fff;
+    font-family: "Poppins";
+    padding:6px 8px;
+    text-align: center;
+    position: relative;
+    z-index: 3;
+}
+
+.cardContainer  button{
+    background-color: rgba(0,0,0,0.3);
+    color:white;
+    border-radius:25px;
+    padding:6px 16px;
+    cursor:pointer;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 3;
+    left:-2px;
+
+  
+}
+
+
+.cardContainer button i{
+    margin-left: 5px;
+} 
+
+.cardContainer .cardInfo-1{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 8px;
+    position: relative;
+    z-index: 3;
+}
+
+.cardContainer .cardInfo-1 h3{
+    color:#fff;
+    font-family: "Poppins";
+    padding:15px 8px;
+    text-align: left;
+    position: relative;
+    z-index: 3;
+}
+
+
+.cardContainer .cardInfo-2{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: relative;
+    z-index: 3;
+}
+
+.cardContainer .cardInfo-2 h3{
+    color:#fff;
+    font-family: "Poppins";
+    padding:15px 8px;
+    text-align: left;
+}
+
+.utils-Container{
+    display:flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-top: 20px;
+    flex-direction: column;
+    margin-top:-10px;
+}
+
+.userActionsContainer{
+    width:60%;
+    text-align: left;
+}
+
+
+.userActionsContainer button{
+    width:max-content;
+    height:max-content;
+    background: #000;
+    color:#fff;
+    border-radius: 8px;
+    margin:10px 10px;
+    padding:8px 12px;
+    font-weight: 600;
+   
+}
+
+
+.userActionsContainer button:nth-child(1) div{
+
+display:flex;
+justify-content: space-between;
+align-items: center;
+
+}
+
+.userActionsContainer button:nth-child(1) img{
+    width:20px;
+    height:20px;
+    margin-left: 6px;
+   }
+
+   
+.userActionsContainer button i{
+ color:#fff;
+}
+
+
+.userActionsContainer .btn2{
+    background: oklch(72.3% 0.219 149.579);
+}
+
+.userActionsContainer .btn2 i{
+    transform: rotate(-45deg);
+
+}
+
+
+.serviceContainer{
+    width: max-content;
+    height: max-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+.serviceIconContainer{
+    width:40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    color:#fff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.servicesContainer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top:20px;
+    width:60%;
+}
+
+
+
+.btn-Container{
+    width:100%;
+    min-width: 300px;
+    margin-top: 3px;
+    margin: 0px auto;
+    max-width: 500px;
+    text-align: left;
+}
+
+
+@media(max-width:1200px){
+    .infoHolder{
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .infoHolder h1{
+        margin:0px auto;
+    }
+
+    
+.utils-Container{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    flex-direction: column;
+}
+
+
+.uf-Header{
+    margin: 0 auto;
+}
+
+
+.userActionsContainer div{
+    flex-wrap: wrap;
+}
+
+.servicesContainer{
+    width: 100%;
+    justify-content: space-evenly;
+}
+
+.serviceContainer{
+    margin: 0px 12px;
+    margin-bottom: 20px;
+}
+
+
+.userActionsContainer{
+    width:100%;
+    text-align: left;
+    margin: 20px auto;
+    max-width: 500px;
+}
+
+.btn-Container{
+    width:100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px auto;
+    max-width: 500px;
+}
+.btn-Container button{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+}
