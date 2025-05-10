@@ -1,6 +1,4 @@
-Thanks! Here's your updated **QuiverPay README**, now without the AI/VoiceWallet feature and with the new **refund feature** for node operators included:
 
----
 
 # QuiverPay 💸
 
