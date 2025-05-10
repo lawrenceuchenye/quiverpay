@@ -37,11 +37,6 @@ Each node's capacity is based on:
 
 * How much ETH they've staked
 * Their reliability (success rate and uptime)
-* Community trust signals
-
-### 🕒 4-Hour Backend Sync
-
-To optimize efficiency, transaction data is cached off-chain for 4-hour windows and then synced to the blockchain.
 
 ### 🛠 Built on Base
 
@@ -55,7 +50,7 @@ We use the Base network for fast, affordable, and secure on-chain activity.
 2. **Smart contract** escrows funds and logs the transaction
 3. **Node operator** processes the request → Pays the fiat bill → Gets reimbursed + a fee
 4. **If data is bad**, node can **issue a refund** → Receives a **0.05 USDC** reward
-5. **Backend** syncs recent off-chain data to chain every 4 hours
+
 
 ---
 
@@ -63,7 +58,7 @@ We use the Base network for fast, affordable, and secure on-chain activity.
 
 * Support for more countries and bill types
 * Cross-chain payments
-* Community governance and staking pools
+* Community governance 
 * Gamified rewards for both users and node operators
 
 ---
