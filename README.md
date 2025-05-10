@@ -4,7 +4,7 @@
 
 **Pay bills with crypto. Backed by DePIN. Built on Base.**
 
-QuiverPay is a decentralized payment network (DePIN) that lets users pay real-world utility bills using stablecoins like USDC or DAI. Whether you're paying for electricity, water, or internet, you can do it directly from your crypto wallet — no conversion hassles, no middlemen.
+QuiverPay is a decentralized payment network (DePIN) that lets users pay real-world utility bills using stablecoins like USDC . Whether you're paying for electricity,or internet, you can do it directly from your crypto wallet — no conversion hassles, no middlemen.
 
 ---
 
