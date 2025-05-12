@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import {Test, console} from "forge-std/Test.sol";
 
 contract QuiverPayManager is ReentrancyGuard, Ownable {
     IERC20 public stablecoin;
@@ -30,7 +31,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     mapping(address => Node) public nodes;
     mapping(address => uint256[]) public userOrders;
 
-    event OrderCreated(uint256 indexed orderId, address indexed user, uint256 amount);
+    event OrderCreated(uint256 indexed orderId, address indexed user, uint256 amount,string billType);
     event OrderClaimed(uint256 indexed orderId, address indexed node,address indexed user);
     event OrderFulfilled(uint256 indexed orderId,address indexed node,address indexed user);
     event OrderRefunded(uint256 indexed orderId,address indexed node,address indexed user);
@@ -46,6 +47,11 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         supportedToken=_stablecoin;
     }
 
+    function getNodeBalance() external view returns(uint256){
+        Node storage n=nodes[msg.sender];
+        return n.stakedETH;
+    }
+
     function stake() public payable {
         require(msg.value > 0, "Must stake ETH");
         nodes[msg.sender].stakedETH += msg.value;
@@ -56,8 +62,12 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         require(nodes[msg.sender].stakedETH !=0 , "Must stake ETH");
         uint256 amount=nodes[msg.sender].stakedETH;
         nodes[msg.sender].stakedETH -= amount;
-        payable(msg.sender).transfer(nodes[msg.sender].stakedETH);
+        payable(msg.sender).transfer(amount);
         emit NodeUnStaked(msg.sender);
+    }
+
+    function getNode() public view returns(Node memory){
+        return nodes[msg.sender];
     }
 
     function createOrder(uint256 amount,string memory orderType) external nonReentrant returns(uint256){
@@ -73,10 +83,9 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
             orderType:orderType
         });
         userOrders[msg.sender].push(orderCounter);
-        emit OrderCreated(orderCounter, msg.sender, amount);
+        emit OrderCreated(orderCounter, msg.sender, amount,orderType);
         orderCounter++;
-
-        return orderCounter;
+        return (orderCounter-1);
     }
     
 
@@ -96,6 +105,10 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         order.fulfilled = true;
         nodes[msg.sender].transactionCount++;
         emit OrderFulfilled(orderId,msg.sender,order.user);
+    }
+
+    function getOrder(uint256 orderId) external view returns(Order memory){
+        return orders[orderId];
     }
 
     function refundUser(uint256 orderId) external nonReentrant {
