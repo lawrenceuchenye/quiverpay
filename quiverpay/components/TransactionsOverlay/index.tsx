@@ -1,7 +1,8 @@
 import "./index.css";
-import React,{useEffect, useState,useRef} from "react";
+import React,{useEffect, useState} from "react";
 import { motion as m } from "framer-motion";
 import axios from "axios";
+import QuiverLogo from "../../src/assets/Frame 68.svg";
 import { dataPlanDB_NG,NG_PREPAID_PROVIDERS} from "../utils";
 import useQuiverStore from "../../store";
 
@@ -34,15 +35,15 @@ const Send:React.FC<Props>=({ type })=>{
     const [phoneNumber,setPhoneNumber]=useState<string|null>(null);
     const [pricingData,setPricingData]=useState<number|null>(null);
     const [fiatAmountToSend,setFiatAmountToSend]=useState(type=="Electricity" ? 0 : 100);
-    const [activeNetwork,setActiveNetwork]=useState("AIRTEL");
+    const [activeNetwork,setActiveNetwork]=useState("MTN NG");
     const [activeNetworkType,setActiveNetworkType]=useState("DAILY");
     const [meterNumber,setMeterNumber]=useState<null|string>(null);
     const [meterOwner,setMeterOwner]=useState<null|string>(null);
     const [elctricityProvider,setElectricityProvider]=useState<null|string>(null);
-
+    const setBillInfo=useQuiverStore((state)=>state.setBillInfo);
     const setIsPay=useQuiverStore((state)=>state.setIsPay);
-
-
+    const userData=useQuiverStore((state)=>state.userData);
+    
     const handleChange = async (event:any) => {
         if(!pricingData){
             const res=await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=ngn`);
@@ -68,12 +69,16 @@ const Send:React.FC<Props>=({ type })=>{
 
       const networkTypeChange=(event:any)=>{
         setActiveNetworkType(event.target.value);
-        const plan=Object.keys(dataPlanDB_NG[activeNetwork ? activeNetwork : "AIRTEL"][event.target.value])[0];
-        setFiatAmountToSend(dataPlanDB_NG[activeNetwork ? activeNetwork : "AIRTEL"][event.target.value][plan]);
+        const plan=Object.keys(dataPlanDB_NG[activeNetwork ? activeNetwork : "AIRTEL NG"][event.target.value])[0];
+        setFiatAmountToSend(dataPlanDB_NG[activeNetwork ? activeNetwork : "AIRTEL NG"][event.target.value][plan]);
     }
 
       const networkPackagePick=(event:any)=>{
         setFiatAmountToSend(dataPlanDB_NG[activeNetwork][activeNetworkType][event.target.value]);
+      }
+
+      const to_str=(val:any)=>{
+        return `${val}`;
       }
 
       useEffect(()=>{
@@ -121,7 +126,7 @@ const Send:React.FC<Props>=({ type })=>{
 
                 {type=="Airtime" &&(
                     <div className="airtime-container">
-                        <select>
+                        <select onChange={(e)=>setActiveNetwork(e.target.value)}>
                             <option>
                                 MTN NG
                             </option>
@@ -156,7 +161,7 @@ const Send:React.FC<Props>=({ type })=>{
                         </select>
 
                         <select onChange={networkTypeChange}  value={activeNetworkType}>
-                        {Object.keys(dataPlanDB_NG[activeNetwork ? activeNetwork : "AIRTEL"]).map((plans)=>{
+                        {Object.keys(dataPlanDB_NG[activeNetwork ? activeNetwork : "AIRTEL NG"]).map((plans)=>{
                                 return(
                                         <option value={plans}>
                                          {plans}
@@ -168,7 +173,7 @@ const Send:React.FC<Props>=({ type })=>{
                         </div>
 
                         <select className="plans" onChange={networkPackagePick}>
-                        {Object.keys(dataPlanDB_NG[activeNetwork ? activeNetwork : "AIRTEL"][activeNetworkType ? activeNetworkType : "DAILY"]).map((data_package)=>{
+                        {Object.keys(dataPlanDB_NG[activeNetwork ? activeNetwork : "AIRTEL NG"][activeNetworkType ? activeNetworkType : "DAILY"]).map((data_package)=>{
                                 return(
                                         <option value={data_package}>
                                          {data_package}
@@ -203,7 +208,9 @@ const Send:React.FC<Props>=({ type })=>{
                          <h2>{detectNetwork(`${phoneNumber}`)} DETECTED</h2>
                     </div>
                 )}
-                <m.button whileTap={{ scale:1.2}}>CONFIRM</m.button>
+                <m.button whileTap={{ scale:1.2}} onClick={()=>setBillInfo(type == "Airtime" ? {network:activeNetwork,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr,phone_number:to_str(phoneNumber)} :
+                 type=="Data" ?  {network:activeNetwork,plan:activeNetworkType,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr,phone_number:to_str(phoneNumber)} :
+                   {provider:elctricityProvider,meter_number:meterNumber,meter_owner:meterOwner,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr} )}>CONFIRM</m.button>
               
                <p style={{ color:"oklch(70.4% 0.04 256.788)"}}>*Tap outside the form to exit</p>
             </m.div>
@@ -212,4 +219,133 @@ const Send:React.FC<Props>=({ type })=>{
     )
 }
 
-export { Send }
+
+
+interface Airtime{
+  network:string|null;
+  amount:number|null;
+  phone_number:string|null;
+  usdc_amount:string|null;
+  fiat_amount:number|null;
+  issuer_address:string| undefined;
+}
+
+interface Data{
+  network:string|null;
+  phone_number:string|null;
+  plan:string|null;
+  amount:number|null;
+  usdc_amount:string|null;
+  fiat_amount:number|null;
+  issuer_address:string|undefined;
+}
+
+
+interface Electricity{
+  provider:string|null;
+  meter_number:string|null;
+  meter_owner:string|null;
+  amount:number|null;
+  usdc_amount:string|null;
+  fiat_amount:number;
+  issuer_address:string|undefined;
+
+}
+
+interface summaryProp{
+    billInfo:Airtime|Data|Electricity;
+    serviceName:string|null;
+}
+
+const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
+  const setIsPay=useQuiverStore((state)=>state.setIsPay);
+
+    return(
+        <div className="overlays-Container" onClick={()=>setIsPay(false,null)}>
+            <div className="summaryForm" onClick={(e)=>e.stopPropagation()}>
+                <div className="sfHeader">
+                    <img src={QuiverLogo} />
+                    <h1>Summary</h1>
+                </div>
+
+                <div className="serviceHeader">
+                    <h1>Service</h1>
+                    <div className="ServiceDiv">
+                        Airtime <i className="fa-solid fa-sim-card"></i>
+                    </div>
+                </div>
+                <hr style={{marginTop:"10px"}}/>
+                <h3>Description</h3>
+                   <hr />
+                {serviceName =="Data" &&(
+                    <div className="billInfo">
+                          <div>
+                         <h4>Network</h4>
+                        <p>{billInfo.network}</p>
+                        </div>
+                          <div>
+                         <h4>Number</h4>
+                        <p>08108454138</p>
+                        </div>
+                        <div>
+                         <h4>1GB - NGN 500 - 1 DAY</h4>
+                        <p>@NGN 500 ~ 0.125 USDC</p>
+                        </div>
+                         <div>
+                            <h4>Charge</h4>
+                            <p>0.1 USDC</p>
+                         </div>
+                        </div>
+                )}
+
+                  {serviceName == "Airtime" &&(
+                    <div className="billInfo">
+                          <div>
+                         <h4>Network</h4>
+                        <p>{billInfo.network}</p>
+                        </div>
+                          <div>
+                         <h4>Number</h4>
+                        <p>{billInfo.phone_number}</p>
+                        </div>
+                        <div>
+                         <h4>Amount</h4>
+                        <p>@NGN {billInfo.fiat_amount} ~ {billInfo.usdc_amount} USDC</p>
+                        </div>
+                         <div>
+                            <h4>Charge</h4>
+                            <p>0.25 USDC</p>
+                         </div>
+                        </div>
+                )}
+
+              {serviceName =="Electricity" &&(
+                    <div className="billInfo">
+                          <div>
+                         <h4>Provider</h4>
+                        <p>MTN NG</p>
+                        </div>
+                          <div>
+                         <h4>Meter Number</h4>
+                        <p>08108454138</p>
+                        </div>
+                        <div>
+                         <h4>Amount</h4>
+                        <p>@NGN 2500 ~ 1.562 USDC</p>
+                        </div>
+                         <div>
+                            <h4>Charge</h4>
+                            <p>0.25 USDC[MEDIUM]</p>
+                         </div>
+                        </div>
+                )}
+                 <hr style={{marginTop:"10px"}}/>
+                <h3>Total </h3>
+                   <hr />
+             
+                <button>Pay</button>
+                </div>
+         </div>
+    )
+}
+export { Send,Summary }

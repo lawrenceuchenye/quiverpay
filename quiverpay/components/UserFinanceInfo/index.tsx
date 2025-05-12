@@ -105,7 +105,7 @@ const Service:React.FC<ServiceProps>=({color,Icon,serviceName,isDisabled=false})
   
     return(
         <div className="serviceContainer">
-        <m.div onClick={()=>setIsPay(true,serviceName)} whileTap={{ scale:1.2 }} className="serviceIconContainer" style={{ background:`${color}`,opacity:`${isDisabled && "0.3"}`}}>
+        <m.div onClick={()=>serviceName != "Tv" && setIsPay(true,serviceName)} whileTap={{ scale:1.2 }} className="serviceIconContainer" style={{ background:`${color}`,opacity:`${isDisabled && "0.3"}`}}>
         {Icon}
         </m.div>
         <h3>{serviceName}</h3>
@@ -114,8 +114,6 @@ const Service:React.FC<ServiceProps>=({color,Icon,serviceName,isDisabled=false})
 }
 
 const UserActionsContainer:React.FC=()=>{
-
- 
     return(
         <div className="userActionsContainer" >
             <div className="btnContainer">

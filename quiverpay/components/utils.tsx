@@ -1,7 +1,7 @@
 
 
 const dataPlanDB_NG={
-    "AIRTEL":{
+    "AIRTEL NG":{
         "DAILY":{
             "100MB - NGN 100 - 1 DAY":100,
             "200MB - NGN 200 - 2 DAYS":200,
