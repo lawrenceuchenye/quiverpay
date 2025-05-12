@@ -2,13 +2,13 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 contract QuiverPayManager is ReentrancyGuard, Ownable {
     IERC20 public stablecoin;
-    address[] supportedTokens;
+    address public supportedToken;
 
     struct Order {
         address user;
@@ -40,25 +40,27 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
 
     error TokenNotSupported();
 
-    constructor(address _stablecoin, address[] _supportedTokens) {
+
+    constructor(address _stablecoin) Ownable(msg.sender) {
         stablecoin = IERC20(_stablecoin);
-        supportedToekns=supportedTokens
+        supportedToken=_stablecoin;
     }
 
-    function stake() external payable {
+    function stake() public payable {
         require(msg.value > 0, "Must stake ETH");
         nodes[msg.sender].stakedETH += msg.value;
         emit NodeStaked(msg.sender, msg.value);
     }
 
     function unStake() external{
-        require(nodeS[msg.sender].stakedETH !=0 , "Must stake ETH");
+        require(nodes[msg.sender].stakedETH !=0 , "Must stake ETH");
+        uint256 amount=nodes[msg.sender].stakedETH;
         nodes[msg.sender].stakedETH -= amount;
-        payable(msg.sender).transfer(node[msg.sender].stakedETH);
+        payable(msg.sender).transfer(nodes[msg.sender].stakedETH);
         emit NodeUnStaked(msg.sender);
     }
 
-    function createOrder(uint256 amount,string orderType) external nonReentrant returns(uint256){
+    function createOrder(uint256 amount,string memory orderType) external nonReentrant returns(uint256){
         require(amount > 0, "Amount must be greater than 0");
         require(stablecoin.transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
@@ -84,7 +86,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         require(order.node == address(0), "Order already claimed");
         require(!order.fulfilled && !order.refunded, "Order already processed");
         order.node = msg.sender;
-        emit OrderClaimed(orderId, msg.sender);
+        emit OrderClaimed(orderId, msg.sender,order.user);
     }
 
     function fulfillOrder(uint256 orderId) external {
@@ -93,8 +95,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         require(!order.fulfilled && !order.refunded, "Order already processed");
         order.fulfilled = true;
         nodes[msg.sender].transactionCount++;
-
-        emit OrderFulfilled(orderId);
+        emit OrderFulfilled(orderId,msg.sender,order.user);
     }
 
     function refundUser(uint256 orderId) external nonReentrant {
@@ -134,6 +135,10 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     // New function to return the USDC balance of a user
     function getUserUSDCBalance(address user) external view returns (uint256) {
         return stablecoin.balanceOf(user);
+    }
+
+    function getSupportedToken() external view returns(address){
+        return supportedToken;
     }
 
     receive() external payable {
