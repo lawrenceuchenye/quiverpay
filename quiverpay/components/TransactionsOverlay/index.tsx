@@ -271,8 +271,12 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
                 <div className="serviceHeader">
                     <h1>Service</h1>
                     <div className="ServiceDiv">
-                        Airtime <i className="fa-solid fa-sim-card"></i>
-                    </div>
+                      { serviceName=="Airtime" &&  <p>Airtime <i className="fa-solid fa-sim-card"></i></p>}
+  
+         { serviceName=="Data" &&  <p>Data <i className="fa-solid fa-wifi"></i></p>}
+                    { serviceName=="Electricity" &&  <p>Electricity <i className="fa-solid fa-bolt"></i></p>}
+                    { serviceName=="Tv" &&  <p>TV <i className="fa-solid fa-sim-card"></i></p>}
+                               </div>
                 </div>
                 <hr style={{marginTop:"10px"}}/>
                 <h3>Description</h3>
@@ -288,12 +292,12 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
                         <p>08108454138</p>
                         </div>
                         <div>
-                         <h4>1GB - NGN 500 - 1 DAY</h4>
-                        <p>@NGN 500 ~ 0.125 USDC</p>
+                         <h4>{billInfo.plan}</h4>
+                        <p>@NGN {billInfo.fiat_amount} ~ {billInfo.usdc_amount} USDC</p>
                         </div>
                          <div>
                             <h4>Charge</h4>
-                            <p>0.1 USDC</p>
+                            <p>0.25 USDC</p>
                          </div>
                         </div>
                 )}
@@ -335,12 +339,15 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
                         </div>
                          <div>
                             <h4>Charge</h4>
-                            <p>0.25 USDC[MEDIUM]</p>
+                            <p>0.25 USDC</p>
                          </div>
                         </div>
                 )}
                  <hr style={{marginTop:"10px"}}/>
-                <h3>Total </h3>
+                 <div style={{ display:"flex",justifyContent:"space-between",alignItem:"center"}}>
+                   <h3>Total </h3>
+                  <p>{parseFloat(billInfo.usdc_amount)+0.25} USDC</p>
+                 </div>
                    <hr />
              
                 <button>Pay</button>
