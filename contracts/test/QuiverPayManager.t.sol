@@ -63,6 +63,13 @@ contract QuiverPayManagerTest is Test {
         vm.stopPrank();
     }
 
+     function testOwnerCanTakeProfit() public {
+        uint256 ownerStart = stablecoin.balanceOf(address(this));
+        qpm.takeProfit();
+
+        uint256 ownerEnd = stablecoin.balanceOf(address(this));
+        assertEq(ownerEnd - ownerStart, qpm.getFeeProfit(), "Owner should receive feeProfit");
+    }
     // Test: Unstake ETH
     function testUnstake() public {
         // Stake ETH first
@@ -92,13 +99,17 @@ contract QuiverPayManagerTest is Test {
 
     // Test: Fulfill Order
     function testFulfillOrder() public {
+
           vm.startPrank(user);
         uint256 amount = 100 * 10 ** 6;  // 100 USDC with 6 decimals
-          stablecoin.approve(address(qpm),amount);
+        stablecoin.approve(address(qpm),amount);
         stablecoin.allowance(user,address(qpm));
         uint256 orderId = qpm.createOrder(amount, "Bill Payment");
         vm.stopPrank();
+
         vm.startPrank(node);
+        qpm.stake{value: 1 ether}();
+      
         qpm.fulfillOrder(orderId);
         assertTrue(qpm.getOrder(orderId).fulfilled);
         assertEq(qpm.getNode().transactionCount, 1);
@@ -116,7 +127,6 @@ contract QuiverPayManagerTest is Test {
         uint256 orderId = qpm.createOrder(amount, "Bill Payment");
         vm.stopPrank();
 
-         
         vm.startPrank(node);
         qpm.stake{value: 1 ether}();
         // Refund user
@@ -127,7 +137,7 @@ contract QuiverPayManagerTest is Test {
         console.log("post refund bal",stablecoin.balanceOf(address(user)));
         uint256 min_amt=0.05*10**6;
         console.log(min_amt);
-        assertEq(stablecoin.balanceOf(address(user)), (mint_amount - amount)+(amount-(0.05*10**6))); // Subtract 0.05 USDC
+        assertEq(stablecoin.balanceOf(address(user)), (mint_amount - amount)+(amount-(0.15*10**6))); // Subtract 0.05 USDC
     }
 
     // Test: Non-reentrant check on stake

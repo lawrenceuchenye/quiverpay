@@ -10,6 +10,7 @@ import {Test, console} from "forge-std/Test.sol";
 contract QuiverPayManager is ReentrancyGuard, Ownable {
     IERC20 public stablecoin;
     address public supportedToken;
+    uint256 public feeProfit=0;
 
     struct Order {
         address user;
@@ -75,10 +76,11 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         uint256 allowance = stablecoin.allowance(msg.sender, address(this));
 
         require(allowance >= amount, "Insufficient allowance");
+        console.log(stablecoin.balanceOf(msg.sender),amount);
         if(stablecoin.balanceOf(msg.sender) < amount){
+            console.log("less tthan");
             revert NotEnoughUSDC();
         }
-        require(stablecoin.balanceOf(msg.sender) < amount,NotEnoughUSDC());
         require(stablecoin.transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
         orders[orderCounter] = Order({
@@ -97,7 +99,14 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
 
     function fulfillOrder(uint256 orderId) external {
         Order storage order = orders[orderId];
+        require(nodes[msg.sender].stakedETH > 0,"Must Be Node Operator Stake ETH To Become One");
         require(!order.fulfilled && !order.refunded, "Order already processed");
+        uint256 platformFee = 0.05 * 10**6;  // 0.05 USDC (6 decimals for USDC)
+        require(order.amount >= platformFee, "Insufficient balance to cover node refund");
+        // Subtract 0.05 USDC from the user's order balance
+        order.amount-=platformFee;
+        feeProfit+=platformFee;
+        require(stablecoin.transfer(msg.sender,order.amount), "Node operator credit failed");
         order.fulfilled = true;
         nodes[msg.sender].transactionCount++;
         emit OrderFulfilled(orderId,msg.sender,order.user);
@@ -111,23 +120,34 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         Order storage order = orders[orderId];
         require(nodes[msg.sender].stakedETH > 0,"Must Be Node Operator");
         require(!order.fulfilled && !order.refunded, "Order already processed");
-        uint256 nodeRefundAmount = 0.05 * 10**6;  // 0.05 USDC (6 decimals for USDC)
-
+        uint256 nodeRefundAmountFee= 0.1 * 10** 6;  // 0.05 USDC (6 decimals for USDC)
+        uint256 platformRefundAmountFee=0.05 * 10 ** 6;
         // Check if the user's order balance is sufficient to cover the 0.05 USDC subtraction
-        require(order.amount >= nodeRefundAmount, "Insufficient balance to cover node refund");
+        require(order.amount >= nodeRefundAmountFee, "Insufficient balance to cover node refund");
 
         // Subtract 0.05 USDC from the user's order balance
-        order.amount -= nodeRefundAmount;
+        order.amount -= nodeRefundAmountFee;
+        order.amount -= platformRefundAmountFee;
+        feeProfit += platformRefundAmountFee;
 
       // Refund the user the remaining balance
         uint256 userRefundAmount = order.amount;
         require(stablecoin.transfer(order.user, userRefundAmount), "User refund failed");
-        // Refund the node operator 0.05 USDC
+        // Refund the node operator 0.1 USDC
         address nodeOperator = msg.sender;  // Assuming msg.sender is the node operator
-        require(stablecoin.transfer(nodeOperator, nodeRefundAmount), "Node operator refund failed");
+        require(stablecoin.transfer(nodeOperator, nodeRefundAmountFee), "Node operator refund failed");
         order.refunded = true;
       
         emit OrderRefunded(orderId,msg.sender,order.user);
+    }
+
+    function takeProfit() public onlyOwner{
+           feeProfit=0;
+           require(stablecoin.transfer(msg.sender, feeProfit), "Node operator refund failed");
+    }
+
+    function getFeeProfit() external returns(uint256){
+        return feeProfit;
     }
 
 
