@@ -262,7 +262,7 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
 
     return(
         <div className="overlays-Container" onClick={()=>setIsPay(false,null)}>
-            <div className="summaryForm" onClick={(e)=>e.stopPropagation()}>
+            <m.div  initial={{ y:"40px",opacity:0,}} animate={{y:"0px",opacity:1}}  transition={{ delay:0.4,duration: 0.6,    stiffness:100 ,  damping: 5,type:"spring" }} className="summaryForm" onClick={(e)=>e.stopPropagation()}>
                 <div className="sfHeader">
                     <img src={QuiverLogo} />
                     <h1>Summary</h1>
@@ -350,8 +350,8 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
                  </div>
                    <hr />
              
-                <button>Pay</button>
-                </div>
+                <m.button whileTap={{ scale:1.2}}>Pay</m.button>
+                </m.div>
          </div>
     )
 }
