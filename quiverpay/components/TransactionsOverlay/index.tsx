@@ -6,6 +6,14 @@ import QuiverLogo from "../../src/assets/Frame 68.svg";
 import { dataPlanDB_NG,NG_PREPAID_PROVIDERS} from "../utils";
 import useQuiverStore from "../../store";
 
+import { useWriteContract } from 'wagmi';
+import { readContract,waitForTransaction } from "wagmi/actions";
+import { parseAbi } from "viem";
+import { parseUnits } from 'viem'; // to parse token amount correctly
+import { QuiverPayManagerABI } from "../contract/abi";
+
+import { getConfig } from "../../config"; // your import path may vary
+
 const roundToThree=(num)=>{
     return Math.round(num * 1000) / 1000;
   }
@@ -31,6 +39,17 @@ interface Props{
     type:string;
 }
 
+const spenderAddress = "0x28A485c0c896D77F7821027EaD8b24bAe1DFBC51";
+const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+
+// Define your ERC20 contract's ABI
+const erc20Abi = parseAbi([
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+]);
+
+
+
 const Send:React.FC<Props>=({ type })=>{
     const [phoneNumber,setPhoneNumber]=useState<string|null>(null);
     const [pricingData,setPricingData]=useState<number|null>(null);
@@ -39,7 +58,7 @@ const Send:React.FC<Props>=({ type })=>{
     const [activeNetworkType,setActiveNetworkType]=useState("DAILY");
     const [meterNumber,setMeterNumber]=useState<null|string>(null);
     const [meterOwner,setMeterOwner]=useState<null|string>(null);
-    const [elctricityProvider,setElectricityProvider]=useState<null|string>(null);
+    const [elctricityProvider,setElectricityProvider]=useState<null|string>("IBADAN ELECTRICITY");
     const setBillInfo=useQuiverStore((state)=>state.setBillInfo);
     const setIsPay=useQuiverStore((state)=>state.setIsPay);
     const userData=useQuiverStore((state)=>state.userData);
@@ -259,9 +278,51 @@ interface summaryProp{
 
 const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
   const setIsPay=useQuiverStore((state)=>state.setIsPay);
+  const userData=useQuiverStore((state)=>state.userData);
+
+   const amountToApprove = parseUnits(`${billInfo.usdc_amount ? roundToThree(parseFloat(billInfo.usdc_amount)+0.25) : 0}`, 6); // 1000 tokens with 18 decimals
+   const { writeContractAsync } = useWriteContract();
+   const [isProcessing,setIsProcessing]=useState(false);
+    const setBillInfo=useQuiverStore((state)=>state.setBillInfo);
+  
+    const handleApprove=async ()=>{
+      console.log(userData?.walletAddr);
+
+   // Check the existing allowance
+     const allowance = await readContract(getConfig(),{
+         address: tokenAddress,
+         abi: erc20Abi,
+         functionName: "allowance",
+         args: [userData?.walletAddr, spenderAddress],
+       });
+
+       console.log(allowance);
+
+  if(allowance < amountToApprove){
+    const tx=await writeContractAsync({
+       address: tokenAddress,
+       abi: erc20Abi,
+       functionName: 'approve',
+       args: [spenderAddress, amountToApprove],
+      });
+    }
+      
+    }
+
+    const createOrder= async ()=>{
+      handleApprove();
+      const tx=await writeContractAsync({
+       address: spenderAddress,
+       abi: QuiverPayManagerABI,
+       functionName: 'createOrder',
+       args: [amountToApprove, serviceName],
+      });
+      console.log(tx);  
+      setIsProcessing(true);   
+    }
 
     return(
-        <div className="overlays-Container" onClick={()=>setIsPay(false,null)}>
+        <div className="overlays-Container">
             <m.div  initial={{ y:"40px",opacity:0,}} animate={{y:"0px",opacity:1}}  transition={{ delay:0.4,duration: 0.6,    stiffness:100 ,  damping: 5,type:"spring" }} className="summaryForm" onClick={(e)=>e.stopPropagation()}>
                 <div className="sfHeader">
                     <img src={QuiverLogo} />
@@ -327,15 +388,15 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
                     <div className="billInfo">
                           <div>
                          <h4>Provider</h4>
-                        <p>MTN NG</p>
+                        <p>{billInfo.provider}</p>
                         </div>
                           <div>
                          <h4>Meter Number</h4>
-                        <p>08108454138</p>
+                        <p>{billInfo.meter_number}</p>
                         </div>
                         <div>
                          <h4>Amount</h4>
-                        <p>@NGN 2500 ~ 1.562 USDC</p>
+                            <p>@NGN {billInfo.fiat_amount} ~ {billInfo.usdc_amount} USDC</p>
                         </div>
                          <div>
                             <h4>Charge</h4>
@@ -346,11 +407,13 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
                  <hr style={{marginTop:"10px"}}/>
                  <div style={{ display:"flex",justifyContent:"space-between",alignItem:"center"}}>
                    <h3>Total </h3>
-                  <p>{parseFloat(billInfo.usdc_amount)+0.25} USDC</p>
+                  <p>{roundToThree(parseFloat(billInfo.usdc_amount)+0.25)} USDC</p>
                  </div>
                    <hr />
-             
-                <m.button whileTap={{ scale:1.2}}>Pay</m.button>
+             <div className="btn-container">
+          <m.button whileTap={{ scale:1.2}} onClick={()=>!isProcessing && createOrder()}>{ isProcessing ? "Processing 1-5 mins." : "Pay" }</m.button>
+          { !isProcessing && (<button  onClick={()=>setBillInfo(null)}>EDIT <i className="fas fa-edit"></i></button>)}
+             </div>
                 </m.div>
          </div>
     )

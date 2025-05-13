@@ -25,7 +25,7 @@ const index:React.FC=()=>{
     const connectWallet=async (role:string)=>{
       setRole(role);
      
-        const { accounts,chainId}=await connectAsync({ connector:useEOAWallet ? injected(): coinbaseWallet});
+        const { accounts,chainId}=await connectAsync({ connector:useEOAWallet ? injected(): coinbaseWalletConnector});
        
         axios.post("http://127.0.0.1:8000/api/create_user/",{
           walletAddr: accounts[0],

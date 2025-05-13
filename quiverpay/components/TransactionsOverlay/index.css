@@ -271,6 +271,16 @@
 
 }
 
+.summaryForm .btn-container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summaryForm .btn-container button:nth-child(2){
+    width:200px;
+    margin-left: 10px;
+}
 @media (max-width:1200px) {
 
     .connectForm{

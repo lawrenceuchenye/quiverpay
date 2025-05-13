@@ -31,14 +31,14 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     mapping(address => uint256[]) public userOrders;
 
     event OrderCreated(uint256 indexed orderId, address indexed user, uint256 amount,string billType);
-     event OrderFulfilled(uint256 indexed orderId,address indexed node,address indexed user);
+    event OrderFulfilled(uint256 indexed orderId,address indexed node,address indexed user);
     event OrderRefunded(uint256 indexed orderId,address indexed node,address indexed user);
     event NodeStaked(address indexed node, uint256 amount);
     event NodeUnStaked(address indexed node);
 
 
     error TokenNotSupported();
-
+    error NotEnoughUSDC();
 
     constructor(address _stablecoin) Ownable(msg.sender) {
         stablecoin = IERC20(_stablecoin);
@@ -73,8 +73,12 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         require(amount > 0, "Amount must be greater than 0");
          // Optional: Check allowance first (for user clarity)
         uint256 allowance = stablecoin.allowance(msg.sender, address(this));
-        require(allowance >= amount, "Insufficient allowance");
 
+        require(allowance >= amount, "Insufficient allowance");
+        if(stablecoin.balanceOf(msg.sender) < amount){
+            revert NotEnoughUSDC();
+        }
+        require(stablecoin.balanceOf(msg.sender) < amount,NotEnoughUSDC());
         require(stablecoin.transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
         orders[orderCounter] = Order({
