@@ -71,6 +71,10 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
 
     function createOrder(uint256 amount,string memory orderType) external nonReentrant returns(uint256){
         require(amount > 0, "Amount must be greater than 0");
+         // Optional: Check allowance first (for user clarity)
+        uint256 allowance = stablecoin.allowance(msg.sender, address(this));
+        require(allowance >= amount, "Insufficient allowance");
+
         require(stablecoin.transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
         orders[orderCounter] = Order({
