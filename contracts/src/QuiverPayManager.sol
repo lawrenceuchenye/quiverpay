@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {Test, console} from "forge-std/Test.sol";
 
@@ -14,7 +14,6 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     struct Order {
         address user;
         uint256 amount;
-        address node;
         bool fulfilled;
         bool refunded;
         string orderType;
@@ -32,8 +31,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     mapping(address => uint256[]) public userOrders;
 
     event OrderCreated(uint256 indexed orderId, address indexed user, uint256 amount,string billType);
-    event OrderClaimed(uint256 indexed orderId, address indexed node,address indexed user);
-    event OrderFulfilled(uint256 indexed orderId,address indexed node,address indexed user);
+     event OrderFulfilled(uint256 indexed orderId,address indexed node,address indexed user);
     event OrderRefunded(uint256 indexed orderId,address indexed node,address indexed user);
     event NodeStaked(address indexed node, uint256 amount);
     event NodeUnStaked(address indexed node);
@@ -54,6 +52,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
 
     function stake() public payable {
         require(msg.value > 0, "Must stake ETH");
+        require(nodes[msg.sender].stakedETH <= 0,"Already staked with this wallet");
         nodes[msg.sender].stakedETH += msg.value;
         emit NodeStaked(msg.sender, msg.value);
     }
@@ -77,7 +76,6 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         orders[orderCounter] = Order({
             user: msg.sender,
             amount: amount,
-            node: address(0),
             fulfilled: false,
             refunded: false,
             orderType:orderType
@@ -89,18 +87,8 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     }
     
 
-    /* DON'T KNOW IF I WILL BE NEDING THIS FUNC */
-    function claimOrder(uint256 orderId) external {
-        Order storage order = orders[orderId];
-        require(order.node == address(0), "Order already claimed");
-        require(!order.fulfilled && !order.refunded, "Order already processed");
-        order.node = msg.sender;
-        emit OrderClaimed(orderId, msg.sender,order.user);
-    }
-
     function fulfillOrder(uint256 orderId) external {
         Order storage order = orders[orderId];
-        require(order.node == msg.sender, "Not assigned to this node");
         require(!order.fulfilled && !order.refunded, "Order already processed");
         order.fulfilled = true;
         nodes[msg.sender].transactionCount++;
@@ -113,7 +101,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
 
     function refundUser(uint256 orderId) external nonReentrant {
         Order storage order = orders[orderId];
-        require(order.node == msg.sender, "Not assigned to this node");
+        require(nodes[msg.sender].stakedETH > 0,"Must Be Node Operator");
         require(!order.fulfilled && !order.refunded, "Order already processed");
         uint256 nodeRefundAmount = 0.05 * 10**6;  // 0.05 USDC (6 decimals for USDC)
 
@@ -126,7 +114,6 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
       // Refund the user the remaining balance
         uint256 userRefundAmount = order.amount;
         require(stablecoin.transfer(order.user, userRefundAmount), "User refund failed");
-
         // Refund the node operator 0.05 USDC
         address nodeOperator = msg.sender;  // Assuming msg.sender is the node operator
         require(stablecoin.transfer(nodeOperator, nodeRefundAmount), "Node operator refund failed");
