@@ -7,10 +7,10 @@ import { dataPlanDB_NG,NG_PREPAID_PROVIDERS} from "../utils";
 import useQuiverStore from "../../store";
 
 import { useWriteContract } from 'wagmi';
-import { readContract,waitForTransaction } from "wagmi/actions";
 import { parseAbi } from "viem";
 import { parseUnits } from 'viem'; // to parse token amount correctly
 import { QuiverPayManagerABI } from "../contract/abi";
+import { readContract,waitForTransactionReceipt } from "wagmi/actions";
 
 import { getConfig } from "../../config"; // your import path may vary
 
@@ -296,7 +296,6 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
          args: [userData?.walletAddr, spenderAddress],
        });
 
-       console.log(allowance);
 
   if(allowance < amountToApprove){
     const tx=await writeContractAsync({
@@ -310,15 +309,22 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
     }
 
     const createOrder= async ()=>{
-      handleApprove();
+      await handleApprove();
       const tx=await writeContractAsync({
        address: spenderAddress,
        abi: QuiverPayManagerABI,
        functionName: 'createOrder',
        args: [amountToApprove, serviceName],
       });
-      console.log(tx);  
-      setIsProcessing(true);   
+      
+      const receipt = await waitForTransactionReceipt(getConfig(), {
+         hash: tx,
+      });
+      
+      setIsProcessing(true); 
+      axios.post("http://127.0.0.1:8000/api/create_tx/",{...billInfo,usdc_amount:roundToThree(parseFloat(billInfo.usdc_amount)+0.2),fiat_amount:parseFloat(billInfo.fiat_amount),type:serviceName});
+      setBillInfo(null);
+      console.log(tx);
     }
 
     return(

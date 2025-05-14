@@ -1,22 +1,40 @@
 from django.db import models
 
 # Create your models here.
-class Type(models.Model):
-    title=models.CharField(max_length=255)
 
-    def __str__(self):
-        return self.title
-    
+class Airtime(models.Model):
+    network=models.CharField(max_length=255)
+    fiat_amount=models.CharField(max_length=100)
+    usdc_amount=models.CharField(max_length=100)
+    phone_number=models.CharField(max_length=255,null=True)
+    amount=models.IntegerField()
+    issuedBy=models.CharField(max_length=255)
+    settledBy=models.CharField(max_length=255,)
+
+class Data(models.Model):
+    network=models.CharField(max_length=255)
+    plan=models.CharField(max_length=255)
+    phone_number=models.CharField(max_length=255)
+    fiat_amount=models.CharField(max_length=100)
+    usdc_amount=models.CharField(max_length=100)
+    amount=models.IntegerField()
+    issuedBy=models.CharField(max_length=255)
+    settledBy=models.CharField(max_length=255,null=True)
+
+
+class Electricity(models.Model):
+    provider=models.CharField(max_length=255)
+    meter_number=models.CharField(max_length=255)
+    meter_owner=models.CharField(max_length=255)
+    fiat_amount=models.CharField(max_length=100)
+    usdc_amount=models.CharField(max_length=100)
+    amount=models.IntegerField()
+    issuedBy=models.CharField(max_length=255)
+    settledBy=models.CharField(max_length=255,null=True)
+
 
 class Transaction(models.Model):
-    type=models.ForeignKey(Type,on_delete=models.CASCADE)
-    author=models.CharField(max_length=255)
-    settledBy=models.CharField(max_length=255,null=True)
-    amount_usdc=models.DecimalField(decimal_places=3,max_digits=20)
-    amount_fiat=models.DecimalField(decimal_places=3,max_digits=20)
-    isClaimed=models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.type
-
-    
+    issuedByAddr=models.CharField(max_length=255)
+    handledByAddr=models.CharField(max_length=255)
+    type=models.CharField(max_length=255)
+    handled_at=models.DateTimeField(auto_now_add=True)

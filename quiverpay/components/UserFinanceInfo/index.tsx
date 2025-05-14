@@ -5,6 +5,10 @@ import { motion as m } from "framer-motion";
 import { getName } from "@coinbase/onchainkit/identity";
 import { base } from "wagmi/chains";
 import useQuiverStore from "../../store";
+import { QuiverPayManagerABI } from "../contract/abi";
+import { readContract } from "wagmi/actions";
+import { parseAbi } from "viem";
+import { getConfig } from "../../config"; // your import path may vary
 
 const formatWalletAddress=(address)=> {
     // Ensure the address is a valid Ethereum address
@@ -40,10 +44,23 @@ const formatWalletAddress=(address)=> {
   }
   
 
+const spenderAddress = "0x28A485c0c896D77F7821027EaD8b24bAe1DFBC51";
+const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+
+
+
+const erc20Abi = parseAbi([
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function balanceOf(address account) view returns (uint256)",  // ✅ added
+]);
+
 const UserMoneyCard:React.FC=()=>{
     const userData=useQuiverStore((state)=>state.userData);
+    const [usdcBal,setUSDCBal]=useState<number|null>(null);
     const [baseName,setBaseName]=useState<any|null>(null);
-
+    const billInfo=useQuiverStore((state)=>state.billInfo);
+ 
     const getBaseName=async()=>{
       
         const ensName=await getName({
@@ -59,12 +76,31 @@ const UserMoneyCard:React.FC=()=>{
         return name.length < 30 ? name : name.slice(0, 18) + "...";
       };
 
-      
+      const getUSDBal=async ()=>{
+
+       const usdc_Bal:string=await readContract(getConfig(),{
+               address: tokenAddress,
+               abi: erc20Abi,
+               functionName: "balanceOf",
+               args: [userData?.walletAddr],
+             });  
+             console.log(parseFloat(usdc_Bal)/(10**6));
+             setUSDCBal(parseFloat(usdc_Bal)/(10**6));
+             console.log("updataed");
+          }
+
+
       useEffect(()=>{
         getBaseName();
-       
+
       },[]);
 
+      useEffect(()=>{
+        console.log("Called");
+       getUSDBal();
+      },[billInfo]);
+
+       
     return(
         <div className="cardContainer">
             <div className="cardInfo-1">
@@ -77,7 +113,7 @@ const UserMoneyCard:React.FC=()=>{
             </div>
             <h2>{formatWalletAddress(userData?.walletAddr)}</h2>
             <div className="cardInfo-2">
-            <h3>**** USDC</h3>
+            <h3>{ usdcBal ? `${usdcBal}` : "****"} USDC</h3>
             <h3>{userData?.reg_date}</h3>
             </div>
             <p>*Only USDC stablecoin is currently supported.</p>
