@@ -3,7 +3,7 @@ import "./index.css";
 import { motion as m } from "framer-motion";
 import useQuiverStore from "../../store";
 import { coinbaseWallet, injected } from 'wagmi/connectors'
-import { useConnect,useAccount,Connector } from 'wagmi';
+import { useConnect,useDisconnect,Connector } from 'wagmi';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
@@ -13,8 +13,8 @@ const index:React.FC=()=>{
     const setConnectClicked=useQuiverStore(state=>state.setConnectClicked);
     const setUserData=useQuiverStore(state=>state.setUserData);
     const [role,setRole]=useState<string | null>(null);
-
-    const { connectAsync,connectors }=useConnect();
+    const { disconnect } = useDisconnect()
+    const { connectAsync,connectors,status }=useConnect();
 
     const coinbaseWalletConnector = connectors.find(
         (connector) => connector.id == "coinbaseWalletSDK"
@@ -22,11 +22,13 @@ const index:React.FC=()=>{
     let nc_address:string|undefined|null=null;
     const navigate=useNavigate();
 
+
+    
     const connectWallet=async (role:string)=>{
+   
       setRole(role);
-     
+        disconnect();
         const { accounts,chainId}=await connectAsync({ connector:useEOAWallet ? injected(): coinbaseWalletConnector});
-       
         axios.post("http://127.0.0.1:8000/api/create_user/",{
           walletAddr: accounts[0],
           role:role
@@ -38,8 +40,10 @@ const index:React.FC=()=>{
             role:response.data.user_data.role,
             reg_date:response.data.user_data.reg_date
           });
+
+          console.log(response.data)
     
-          if(response.data.user_type=="NODE_USER"){
+          if(response.data.user_data.role==2){
             navigate("/mempool");
             return
           }
@@ -52,6 +56,10 @@ const index:React.FC=()=>{
        });
    }
 
+
+    useEffect(()=>{
+       
+    },[]);
    
    return(
 <div className="overlayContainer" onClick={()=>setConnectClicked(false)}>

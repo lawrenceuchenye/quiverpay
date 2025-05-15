@@ -6,7 +6,7 @@ import { getName } from "@coinbase/onchainkit/identity";
 import { base } from "wagmi/chains";
 import useQuiverStore from "../../store";
 import { QuiverPayManagerABI } from "../contract/abi";
-import { readContract } from "wagmi/actions";
+import { readContract,waitForTransactionReceipt } from "wagmi/actions";
 import { parseAbi } from "viem";
 import { getConfig } from "../../config"; // your import path may vary
 
@@ -153,9 +153,9 @@ const UserActionsContainer:React.FC=()=>{
     return(
         <div className="userActionsContainer" >
             <div className="btnContainer">
-            <m.button whileTap={{ scale:1.2}}><div>To Quiver <img src={QuiverLogo} /></div></m.button>
-            <m.button whileTap={{ scale:1.2}}>To Wallet <i className="fa-solid fa-wallet"></i></m.button>
-            <m.button whileTap={{ scale:1.2}}>To Bank <i className="fa-solid fa-arrow-right"></i></m.button>
+            <m.button whileTap={{ scale:1.2}} style={{opacity:"0.5",cursor:"default"}}><div>To Quiver <img src={QuiverLogo} /></div></m.button>
+            <m.button whileTap={{ scale:1.2}} style={{opacity:"0.5",cursor:"default"}}>To Wallet <i className="fa-solid fa-wallet"></i></m.button>
+            <m.button whileTap={{ scale:1.2}} style={{opacity:"0.5",cursor:"default"}}>To Bank <i className="fa-solid fa-arrow-right"></i></m.button>
             </div>
             <div className="servicesContainer">
                <Service serviceName="Airtime" color={colors[0]} Icon={<i className="fa-solid fa-sim-card"></i>} />

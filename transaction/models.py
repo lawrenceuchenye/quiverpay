@@ -9,7 +9,8 @@ class Airtime(models.Model):
     phone_number=models.CharField(max_length=255,null=True)
     amount=models.IntegerField()
     issuedBy=models.CharField(max_length=255)
-    settledBy=models.CharField(max_length=255,)
+    settledBy=models.CharField(max_length=255,blank=True)
+    isOpen=models.BooleanField(default=False)
 
 class Data(models.Model):
     network=models.CharField(max_length=255)
@@ -19,7 +20,8 @@ class Data(models.Model):
     usdc_amount=models.CharField(max_length=100)
     amount=models.IntegerField()
     issuedBy=models.CharField(max_length=255)
-    settledBy=models.CharField(max_length=255,null=True)
+    settledBy=models.CharField(max_length=255,null=True,blank=True)
+    isOpen=models.BooleanField(default=False)
 
 
 class Electricity(models.Model):
@@ -30,7 +32,8 @@ class Electricity(models.Model):
     usdc_amount=models.CharField(max_length=100)
     amount=models.IntegerField()
     issuedBy=models.CharField(max_length=255)
-    settledBy=models.CharField(max_length=255,null=True)
+    settledBy=models.CharField(max_length=255,null=True,blank=True)
+    isOpen=models.BooleanField(default=False)
 
 
 class Transaction(models.Model):

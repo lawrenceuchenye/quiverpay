@@ -1,5 +1,7 @@
-import React from "react";
+import React,{ useEffect,useState } from "react";
+import useQuiverStore from "../../store";
 import "./index.css";
+import axios from "axios";
 
 
 const colors=["#FF7A00","#00BFFF","#FFD700","#6A0DAD","#2ECC71"];
@@ -12,7 +14,34 @@ interface ServiceStatProps{
 }
 
 const ServiceStats:React.FC<ServiceStatProps>=({ serviceName,Icon,color,amount})=>{
-    const percentage=(amount/MAX_BILLS_OVERFLOW)*100;
+    const userData=useQuiverStore((state)=>state.userData);
+    const [percentage,setPercentage]=useState(0);
+
+   // const percentage=(amount/MAX_BILLS_OVERFLOW)*100;
+
+    const getStats=async ()=>{
+          switch(serviceName){
+            case "Airtime":
+                const resa=await axios.post("http://127.0.0.1:8000/api/wallet_airtime_tx/",{"walletAddr":userData?.walletAddr});
+                setPercentage((JSON.parse(resa.data.data).length/MAX_BILLS_OVERFLOW)*100);
+                break;
+            case "Data":
+                const resdt=await axios.post("http://127.0.0.1:8000/api/wallet_data_tx/",{"walletAddr":userData?.walletAddr});
+                setPercentage((JSON.parse(resdt.data.data).length/MAX_BILLS_OVERFLOW)*100);
+                break;
+            case "Electricity":
+                const rese=await axios.post("http://127.0.0.1:8000/api/wallet_electricity_tx/",{"walletAddr":userData?.walletAddr});
+                setPercentage((JSON.parse(rese.data.data).length/MAX_BILLS_OVERFLOW)*100);
+                break;   
+            default:
+                console.log("Nothing");
+        }
+    }
+
+    useEffect(()=>{
+        getStats();
+    },[])
+
     return(
         <div className="serviceStatContainer">
             <div className="bar" style={{ background:`${color}`,width:`${percentage > 100 ? 100 : percentage}%`}}>

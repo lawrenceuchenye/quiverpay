@@ -13,13 +13,13 @@ import { Send,Summary } from "../components/TransactionsOverlay";
 
 import "./App.css";
 import useQuiverStore from "../store";
+import StakeETH from "../components/StakeETH";
 
 function App() {
 
    const [isMobile,setIsMobile]=useState<boolean>(false);
   const connectClicked=useQuiverStore((state)=>state.connectClicked);
   const isPay=useQuiverStore((state)=>state.isPay);
-  const serviceName=useQuiverStore((state)=>state.billType);
   const billType=useQuiverStore((state)=>state.billType);
   const billInfo=useQuiverStore((state)=>state.billInfo);
 
@@ -40,8 +40,9 @@ function App() {
      </Routes>
    
     </div>
+    <StakeETH />
         { isPay && <Send type={billType}/>}
-       { billInfo && <Summary billInfo={billInfo} serviceName={billType}/> }
+       { (billInfo && isPay) && <Summary billInfo={billInfo} serviceName={billType}/> }
        { isMobile && <MobileNav /> }
        { connectClicked && <ConnectOverlay />}
  

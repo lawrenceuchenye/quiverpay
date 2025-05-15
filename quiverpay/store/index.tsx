@@ -44,10 +44,12 @@ interface QuiverState {
   isPay:boolean;
   billType:string|null;
   billInfo:null|Airtime|Data|Electricity;
+  isStake:boolean;
   setConnectClicked: (clickState: boolean) => void;
   setUserData:(data:null|UserData) => void;
   setIsPay:(isPay:boolean,billType:string) => void;
   setBillInfo:(bill:null|Airtime|Data|Electricity) => void;
+  setIsStake:(isStake:boolean) => void;
 }
 
 
@@ -58,6 +60,10 @@ const useQuiverStore = create<QuiverState>((set) => ({
   billType:null,
   isPay:false,
   billInfo:null,
+  isStake:false,
+  setIsStake:(isStake:boolean)=>{
+    set(() => ({ isStake: isStake }));
+  },
   setConnectClicked: (clickState: boolean) => {
     set(() => ({ connectClicked: clickState }));
   },

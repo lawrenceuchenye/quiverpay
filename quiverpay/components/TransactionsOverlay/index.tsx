@@ -46,6 +46,7 @@ const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 const erc20Abi = parseAbi([
   "function allowance(address owner, address spender) view returns (uint256)",
   "function approve(address spender, uint256 amount) returns (bool)",
+  "function balanceOf(address account) view returns (uint256)",  // ✅ added
 ]);
 
 
@@ -61,7 +62,20 @@ const Send:React.FC<Props>=({ type })=>{
     const [elctricityProvider,setElectricityProvider]=useState<null|string>("IBADAN ELECTRICITY");
     const setBillInfo=useQuiverStore((state)=>state.setBillInfo);
     const setIsPay=useQuiverStore((state)=>state.setIsPay);
-    const userData=useQuiverStore((state)=>state.userData);
+    const userData=useQuiverStore((state)=>state.userData); 
+    const [usdcBal,setUSDCBal]=useState<number|null>(null);
+      
+     const getUSDBal=async ()=>{
+    
+           const usdc_Bal:string=await readContract(getConfig(),{
+                   address: tokenAddress,
+                   abi: erc20Abi,
+                   functionName: "balanceOf",
+                   args: [userData?.walletAddr],
+                 });  
+                 setUSDCBal(parseFloat(usdc_Bal)/(10**6));
+              }
+    
     
     const handleChange = async (event:any) => {
         if(!pricingData){
@@ -101,6 +115,7 @@ const Send:React.FC<Props>=({ type })=>{
       }
 
       useEffect(()=>{
+        getUSDBal();
         getPrice();
       },[]);
       
@@ -116,10 +131,9 @@ const Send:React.FC<Props>=({ type })=>{
                     </option>
                 </select>
                 <div>
-                    <p><b>BALANCE:</b> <i>2,345.00</i></p>
+                    <p><b>BALANCE:</b> <i>{usdcBal ? usdcBal : "****"}</i></p>
                 </div>
                 </div>
-
                 <div className="txData">
                     <div style={{ display:"flex",alignItems:"center"}}>
                         <p>NGN</p>
@@ -227,9 +241,12 @@ const Send:React.FC<Props>=({ type })=>{
                          <h2>{detectNetwork(`${phoneNumber}`)} DETECTED</h2>
                     </div>
                 )}
-                <m.button whileTap={{ scale:1.2}} onClick={()=>setBillInfo(type == "Airtime" ? {network:activeNetwork,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr,phone_number:to_str(phoneNumber)} :
+                <m.button whileTap={{ scale:1.2}} onClick={()=>{
+                  setBillInfo(type == "Airtime" ? {network:activeNetwork,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr,phone_number:to_str(phoneNumber)} :
                  type=="Data" ?  {network:activeNetwork,plan:activeNetworkType,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr,phone_number:to_str(phoneNumber)} :
-                   {provider:elctricityProvider,meter_number:meterNumber,meter_owner:meterOwner,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr} )}>CONFIRM</m.button>
+                   {provider:elctricityProvider,meter_number:meterNumber,meter_owner:meterOwner,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr} );
+                   getUSDBal();
+                   }}>CONFIRM</m.button>
               
                <p style={{ color:"oklch(70.4% 0.04 256.788)"}}>*Tap outside the form to exit</p>
             </m.div>
@@ -237,7 +254,6 @@ const Send:React.FC<Props>=({ type })=>{
         </div>
     )
 }
-
 
 
 interface Airtime{
@@ -424,4 +440,5 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
          </div>
     )
 }
+
 export { Send,Summary }

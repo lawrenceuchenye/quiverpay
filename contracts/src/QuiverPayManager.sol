@@ -23,6 +23,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     struct Node {
         uint256 stakedETH;
         uint256 transactionCount;
+        uint256 lifetimeEarning;
     }
 
     uint256 public orderCounter;
@@ -106,9 +107,11 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         // Subtract 0.05 USDC from the user's order balance
         order.amount-=platformFee;
         feeProfit+=platformFee;
-        require(stablecoin.transfer(msg.sender,order.amount), "Node operator credit failed");
         order.fulfilled = true;
         nodes[msg.sender].transactionCount++;
+        nodes[msg.sender].lifetimeEarning+=order.amount;
+        require(stablecoin.transfer(msg.sender,order.amount), "Node operator credit failed");
+      
         emit OrderFulfilled(orderId,msg.sender,order.user);
     }
 
@@ -155,9 +158,9 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         return userOrders[user];
     }
 
-    function getNodeInfo(address node) external view returns (uint256 stakedETH, uint256 txCount) {
+    function getNodeInfo(address node) external view returns (uint256 stakedETH, uint256 txCount,uit256 lifeEarning) {
         Node memory n = nodes[node];
-        return (n.stakedETH, n.transactionCount);
+        return (n.stakedETH, n.transactionCount,n.lifetimeEarning);
     }
 
     // New function to return the USDC balance of a user

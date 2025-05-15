@@ -23,7 +23,7 @@
 
 
 
-.cardContainer{
+.card-Container{
     width:330px;
     height:max-content;
     border-radius:20px;
@@ -32,6 +32,116 @@
     overflow: hidden;
     position: relative;
 }
+
+
+
+.card-Container{
+    width:330px;
+    height:max-content;
+    border-radius:20px;
+    background:#0052FF;
+    padding: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+
+.card-Container .blob{
+  width:160px;
+  height:160px;
+  border-radius: 50%;
+  background: oklch(48.8% 0.243 264.376);
+  position:absolute;
+  top:0;
+}
+
+
+.card-Container .blob-2{
+    width:160px;
+    height:160px;
+    border-radius: 50%;
+    background: oklch(48.8% 0.243 264.376);
+    position:absolute;
+    right:0;
+    top:70px;
+  }
+
+
+
+.card-Container p{
+    font-size: 12px;
+    color:#fff;
+    font-family: "Poppins";
+    margin:0 25px;
+    position: relative;
+    z-index: 3;
+   
+}
+
+.card-Container h2{
+    color:#fff;
+    font-family: "Poppins";
+    padding:6px 8px;
+    text-align: center;
+    position: relative;
+    z-index: 3;
+}
+
+.card-Container  button{
+    background-color: rgba(0,0,0,0.3);
+    color:white;
+    border-radius:25px;
+    padding:6px 16px;
+    cursor:pointer;
+    position: relative;
+    z-index: 3;
+    left:-2px;
+
+  
+}
+
+.card-Container  button span{
+    text-transform: lowercase;
+}
+
+.card-Container button i{
+    margin-left: 5px;
+} 
+
+.card-Container .cardInfo-1{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 8px;
+    position: relative;
+    z-index: 3;
+}
+
+.card-Container .cardInfo-1 h3{
+    color:#fff;
+    font-family: "Poppins";
+    padding:15px 8px;
+    text-align: left;
+    position: relative;
+    z-index: 3;
+}
+
+
+.card-Container .cardInfo-2{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: relative;
+    z-index: 3;
+}
+
+.card-Container .cardInfo-2 h3{
+    color:#fff;
+    font-family: "Poppins";
+    padding:15px 8px;
+    text-align: left;
+}
+
 
 
 
@@ -146,7 +256,6 @@
     z-index: 3;
     left:-2px;
 
-  
 }
 
 
@@ -197,13 +306,15 @@
     margin-top:-10px;
 }
 
-.userActionsContainer{
-    width:60%;
+.userActions-Container{
+    width:100%;
     text-align: left;
+    margin-left:-15px;
+    margin-top: 10px;
 }
 
 
-.userActionsContainer button{
+.userActions-Container button{
     width:max-content;
     height:max-content;
     background: #000;
@@ -216,7 +327,7 @@
 }
 
 
-.userActionsContainer button:nth-child(1) div{
+.userActions-Container button:nth-child(1) div{
 
 display:flex;
 justify-content: space-between;
@@ -224,23 +335,23 @@ align-items: center;
 
 }
 
-.userActionsContainer button:nth-child(1) img{
+.userActions-Container button:nth-child(1) img{
     width:20px;
     height:20px;
     margin-left: 6px;
    }
 
    
-.userActionsContainer button i{
+.userActions-Container button i{
  color:#fff;
 }
 
 
-.userActionsContainer .btn2{
+.userActions-Container .btn2{
     background: oklch(72.3% 0.219 149.579);
 }
 
-.userActionsContainer .btn2 i{
+.userActions-Container .btn2 i{
     transform: rotate(-45deg);
 
 }
