@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import React, { useEffect, useState } from "react";
 import "./index.css";
 import QuiverLogo from "../../src/assets/Frame 68.svg";

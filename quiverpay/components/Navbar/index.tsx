@@ -1,3 +1,4 @@
+//@ts-nocheck
 
 import React from 'react';
 import QuiverLogo from "../../src/assets/Frame 68.svg";

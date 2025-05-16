@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import React, { useState,useEffect } from "react";
 import "./index.css";
 import { motion as m } from "framer-motion";

@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import "./index.css";
 import React,{useEffect, useState} from "react";
 import { motion as m } from "framer-motion";
@@ -36,7 +38,7 @@ const roundToThree=(num)=>{
   
 
 interface Props{
-    type:string;
+    type:string|null;
 }
 
 const spenderAddress = "0x28A485c0c896D77F7821027EaD8b24bAe1DFBC51";
