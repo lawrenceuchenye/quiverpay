@@ -11,6 +11,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     IERC20 public stablecoin;
     address public supportedToken;
     uint256 public feeProfit=0;
+    uint256 totalUSDCHeld=0;
 
     struct Order {
         address user;
@@ -37,15 +38,39 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     event OrderRefunded(uint256 indexed orderId,address indexed node,address indexed user);
     event NodeStaked(address indexed node, uint256 amount);
     event NodeUnStaked(address indexed node);
-
+    event NodeSlashed(address indexed slashed_node);
 
     error TokenNotSupported();
     error NotEnoughUSDC();
+    error MUstBeANodeOperator();
+    error OrderAlreadyProccess();
+    error NotEnoughUSDCForFund();
 
     constructor(address _stablecoin) Ownable(msg.sender) {
         stablecoin = IERC20(_stablecoin);
         supportedToken=_stablecoin;
     }
+
+    function slash(address node_addr) external onlyOwner{
+        require(nodes[msg.sender].stakedETH > 0,"Address is not a Node");
+        nodes[msg.sender].stakedETH=nodes[msg.sender].stakedETH/2;
+        emit NodeSlashed(node_addr);
+    }
+
+  function drain() external onlyOwner {
+    // Drain ETH balance
+    uint256 ethBalance = address(this).balance;
+    if (ethBalance > 0) {
+        payable(owner()).transfer(ethBalance);
+    }
+
+    // Drain USDC balance (stablecoin)
+    uint256 usdcBalance = stablecoin.balanceOf(address(this));
+    if (usdcBalance > 0) {
+        require(stablecoin.transfer(owner(), usdcBalance), "USDC transfer failed");
+    }
+}
+
 
     function getNodeBalance() external view returns(uint256){
         Node storage n=nodes[msg.sender];
@@ -71,19 +96,20 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         return nodes[msg.sender];
     }
 
+    function getCurrentOrderId() external view returns(uint256){
+        return orderCounter-1;
+    }
+
     function createOrder(uint256 amount,string memory orderType) external nonReentrant returns(uint256){
         require(amount > 0, "Amount must be greater than 0");
          // Optional: Check allowance first (for user clarity)
         uint256 allowance = stablecoin.allowance(msg.sender, address(this));
-
         require(allowance >= amount, "Insufficient allowance");
         console.log(stablecoin.balanceOf(msg.sender),amount);
         if(stablecoin.balanceOf(msg.sender) < amount){
-            console.log("less tthan");
             revert NotEnoughUSDC();
         }
         require(stablecoin.transferFrom(msg.sender, address(this), amount), "Transfer failed");
-
         orders[orderCounter] = Order({
             user: msg.sender,
             amount: amount,
@@ -119,27 +145,35 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         return orders[orderId];
     }
 
-    function refundUser(uint256 orderId) external nonReentrant {
-        Order storage order = orders[orderId];
-        require(nodes[msg.sender].stakedETH > 0,"Must Be Node Operator");
-        require(!order.fulfilled && !order.refunded, "Order already processed");
-        uint256 nodeRefundAmountFee= 0.1 * 10** 6;  // 0.05 USDC (6 decimals for USDC)
-        uint256 platformRefundAmountFee=0.05 * 10 ** 6;
-        // Check if the user's order balance is sufficient to cover the 0.05 USDC subtraction
-        require(order.amount >= nodeRefundAmountFee, "Insufficient balance to cover node refund");
+    function refundUser(uint256 orderId) external nonReentrant  {
+        Order memory order = orders[orderId];
+        if(!(nodes[msg.sender].stakedETH > 0)){
+            revert MUstBeANodeOperator();
+        }
+      
+       if(!(!order.fulfilled && !order.refunded)){
+         revert OrderAlreadyProccess();
+       }
 
+        uint256 nodeRefundAmountFee= 0.1 * 10 ** 6;  // 0.05 USDC (6 decimals for USDC)
+        uint256 platformRefundAmountFee=0.05 * 10 ** 6;
+
+        // Check if the user's order balance is sufficient to cover the 0.05 USDC subtraction
+        if(order.amount >= (nodeRefundAmountFee+platformRefundAmountFee)){
+            revert NotEnoughUSDCForFund();
+        }
+/*
         // Subtract 0.05 USDC from the user's order balance
         order.amount -= nodeRefundAmountFee;
         order.amount -= platformRefundAmountFee;
         feeProfit += platformRefundAmountFee;
 
       // Refund the user the remaining balance
-        uint256 userRefundAmount = order.amount;
+      /*  uint256 userRefundAmount = order.amount;
         require(stablecoin.transfer(order.user, userRefundAmount), "User refund failed");
         // Refund the node operator 0.1 USDC
-        address nodeOperator = msg.sender;  // Assuming msg.sender is the node operator
-        require(stablecoin.transfer(nodeOperator, nodeRefundAmountFee), "Node operator refund failed");
-        order.refunded = true;
+        require(stablecoin.transfer(msg.sender, nodeRefundAmountFee), "Node operator refund failed");
+        order.refunded = true;*/
       
         emit OrderRefunded(orderId,msg.sender,order.user);
     }
@@ -158,7 +192,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         return userOrders[user];
     }
 
-    function getNodeInfo(address node) external view returns (uint256 stakedETH, uint256 txCount,uit256 lifeEarning) {
+    function getNodeInfo(address node) external view returns (uint256 stakedETH, uint256 txCount,uint256 lifeEarning) {
         Node memory n = nodes[node];
         return (n.stakedETH, n.transactionCount,n.lifetimeEarning);
     }

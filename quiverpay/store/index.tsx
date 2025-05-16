@@ -14,6 +14,7 @@ interface Airtime{
   usdc_amount:string|null;
   fiat_amount:number|null;
   issuer_address:string| undefined;
+  orderId:number;
 }
 
 interface Data{
@@ -24,6 +25,7 @@ interface Data{
   usdc_amount:string|null;
   fiat_amount:number|null;
   issuer_address:string|undefined;
+  orderId:number;
 }
 
 
@@ -35,6 +37,7 @@ interface Electricity{
   usdc_amount:string|null;
   fiat_amount:number;
   issuer_address:string|undefined;
+   orderId:number;
 }
 
 

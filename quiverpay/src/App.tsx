@@ -14,6 +14,7 @@ import { Send,Summary } from "../components/TransactionsOverlay";
 import "./App.css";
 import useQuiverStore from "../store";
 import StakeETH from "../components/StakeETH";
+import TxHandleContainer from "../components/TxHandleContainer";
 
 function App() {
 
@@ -41,7 +42,8 @@ function App() {
      </Routes>
    
     </div>
-    { isStake && <StakeETH /> }
+       { billInfo  && <TxHandleContainer />}
+      { isStake && <StakeETH /> }
         { isPay && <Send type={billType}/>}
        { (billInfo && isPay) && <Summary billInfo={billInfo} serviceName={billType}/> }
        { isMobile && <MobileNav /> }

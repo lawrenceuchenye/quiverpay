@@ -6,7 +6,7 @@ class AirtimeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=Airtime
-        fields=["network","fiat_amount","usdc_amount","amount","type","issuedBy"]
+        fields=["network","fiat_amount","usdc_amount","amount","type","issuedBy","orderId"]
 
     def get_type(self,obj):
         return "Airtime"
@@ -17,7 +17,7 @@ class DataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=Data        
-        fields=["network","fiat_amount","usdc_amount","amount","type","plan"]
+        fields=["network","fiat_amount","usdc_amount","amount","type","plan","issuedBy","orderId"]
 
       
     def get_type(self,obj):
@@ -29,7 +29,7 @@ class ElectricitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model=Electricity
-        fields=["fiat_amount","usdc_amount","amount","type","meter_owner","meter_number","issuedBy"]
+        fields=["fiat_amount","usdc_amount","amount","type","meter_owner","meter_number","issuedBy","orderId"]
 
     def get_type(self,obj):
         return "Electricity"

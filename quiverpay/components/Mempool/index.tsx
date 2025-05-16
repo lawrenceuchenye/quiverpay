@@ -1,3 +1,4 @@
+
 //@ts-nocheck
 
 import React, { useEffect, useState } from "react";
@@ -45,7 +46,7 @@ const TxContainer:React.FC<TxProps>=({Icon,bill})=>{
                 
                 <div style={{ background:colors[bill.type == "Airtime" ? 0 : bill.type == "Data" ? 1 : 2]}}>{Icon}</div>
             </div>
-            <m.button whileTap={{ scale:1.2 }} onClick={()=>setBillInfo(bill)}>
+            <m.button whileTap={{ scale:1.2 }} onClick={()=>setBillInfo({...bill,orderId:bill.orderId})}>
                 <p>PROCESS | payout {roundToThree(bill.usdc_amount)} USDC <i className="fa-solid fa-key"></i></p>
             </m.button>
         </div>
@@ -54,15 +55,19 @@ const TxContainer:React.FC<TxProps>=({Icon,bill})=>{
 
 const index:React.FC=()=>{
     const [openTxs,setOpenTxs]=useState<null|any>(null);
- 
+   
     const getOpenTxs=async()=>{
         const res=await axios.get("http://127.0.0.1:8000/api/get_open_txs/");
+        console.log(res);
          setOpenTxs(res.data.openTxs);
     }
 
     useEffect(()=>{
         if(!openTxs){
            getOpenTxs();
+           const intervalId = setInterval(() => {
+               getOpenTxs();
+}, 30000);
         }     
     },[openTxs]);
 

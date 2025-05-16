@@ -1,0 +1,34 @@
+.txOverlay{
+    background: rgba(0,0,0,0.2);
+    width:100%;
+    height:100%;
+    position:absolute;
+    top:0;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    z-index:7;
+    position:fixed;
+}
+
+.btnActionContainer{
+    display: flex;
+    justify-content: space-between;
+    margin:20px 0;
+    flex-wrap: wrap;
+}
+
+.btnActionContainer button{
+ width: max-content;
+ height: max-content;
+ margin: 0 10px;
+  background: oklch(64.5% 0.246 16.439);
+}
+
+.btnActionContainer button:nth-child(2){
+   background: oklch(62.3% 0.214 259.815);
+}
+
+.btnActionContainer button:nth-child(3){
+    background: oklch(79.2% 0.209 151.711);
+}

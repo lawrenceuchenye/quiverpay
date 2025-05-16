@@ -11,17 +11,19 @@ from decimal import Decimal
 
 @api_view(["POST"])
 def createTx(request,*args,**kwargs):
+    totalIds=len(Airtime.objects.all())+len(Data.objects.all())+len(Electricity.objects.all())
+
     data=request.data
     if data["type"]=="Airtime":
-        Airtime.objects.create(network=data["network"],fiat_amount=str(data["fiat_amount"]),usdc_amount=str(data["usdc_amount"]),issuedBy=data["issuer_address"],amount=int(data["amount"]),phone_number=data["phone_number"])
+        Airtime.objects.create(network=data["network"],fiat_amount=str(data["fiat_amount"]),usdc_amount=str(data["usdc_amount"]),issuedBy=data["issuer_address"],amount=int(data["amount"]),phone_number=data["phone_number"],orderId=totalIds)
         return Response({ "success":True})
     
     if data["type"]=="Data":
-        Data.objects.create(network=data["network"],plan=data["plan"],fiat_amount=str(data["fiat_amount"]),usdc_amount=str(data["usdc_amount"]),issuedBy=data["issuer_address"],amount=int(data["amount"]),phone_number=data["phone_number"])
+        Data.objects.create(network=data["network"],plan=data["plan"],fiat_amount=str(data["fiat_amount"]),usdc_amount=str(data["usdc_amount"]),issuedBy=data["issuer_address"],amount=int(data["amount"]),phone_number=data["phone_number"],orderId=totalIds)
         return Response({ "success":True})
     
     if data["type"]=="Electricity":
-        Electricity.objects.create(provider=data["provider"],fiat_amount=str(data["fiat_amount"]),usdc_amount=str(data["usdc_amount"]),issuedBy=data["issuer_address"],amount=int(data["amount"]),meter_number=data["meter_number"],meter_owner=data["meter_owner"])
+        Electricity.objects.create(provider=data["provider"],fiat_amount=str(data["fiat_amount"]),usdc_amount=str(data["usdc_amount"]),issuedBy=data["issuer_address"],amount=int(data["amount"]),meter_number=data["meter_number"],meter_owner=data["meter_owner"],orderId=totalIds)
         return Response({ "success":True})
    
     return Response({
@@ -34,7 +36,9 @@ def createTx(request,*args,**kwargs):
 @api_view(["POST"])
 def getWalletAirtimeTx(request,*args,**kwargs):
     data=request.data
+    print(data)
     airtime_txs=Airtime.objects.filter(issuedBy=data['walletAddr'])
+    print(AirtimeSerializer(airtime_txs,many=True).data)
     if(len(airtime_txs) > 0):
         return Response({ "success":True,"data":json.dumps(AirtimeSerializer(airtime_txs,many=True).data) })
     return Response({

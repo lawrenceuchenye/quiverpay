@@ -13,7 +13,7 @@ import { useWriteContract } from "wagmi";
 
 
 
-const spenderAddress = "0x28A485c0c896D77F7821027EaD8b24bAe1DFBC51";
+const spenderAddress = "0x47bCFD7D078FDFd696F199911F8a54f2F9B81B81";
 const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 

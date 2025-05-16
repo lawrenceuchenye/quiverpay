@@ -7,11 +7,12 @@ import { motion as m } from "framer-motion";
 import { getName } from "@coinbase/onchainkit/identity";
 import { base } from "wagmi/chains";
 import useQuiverStore from "../../store";
-import { QuiverPayManagerABI } from "../contract/abi";
-import { readContract,waitForTransactionReceipt } from "wagmi/actions";
+import { QuiverPayManagerABI} from "../contract/abi";
+import { readContract,waitForTransactionReceipt} from "wagmi/actions";
 import { parseAbi } from "viem";
 import { getConfig } from "../../config"; // your import path may vary
 import { useWriteContract } from "wagmi";
+import {CA,TA} from "../utils";
 
 const formatWalletAddress=(address)=> {
     // Ensure the address is a valid Ethereum address
@@ -47,10 +48,6 @@ const formatWalletAddress=(address)=> {
   }
   
 
-const spenderAddress = "0x28A485c0c896D77F7821027EaD8b24bAe1DFBC51";
-const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
-
-
 
 const erc20Abi = parseAbi([
   "function allowance(address owner, address spender) view returns (uint256)",
@@ -83,7 +80,7 @@ const UserMoneyCard:React.FC=()=>{
       const getUSDBal=async ()=>{
 
        const usdc_Bal:string=await readContract(getConfig(),{
-               address: tokenAddress,
+               address:TA,
                abi: erc20Abi,
                functionName: "balanceOf",
                args: [userData?.walletAddr],
@@ -128,7 +125,7 @@ const UserMoneyCard:React.FC=()=>{
 
            </div>
         </div>
-    )
+    );
 }
 
 
@@ -141,7 +138,7 @@ const NodeInfo:React.FC=()=>{
 
      const getNodeInfo=async ()=>{
           const nodeInfo:any=await readContract(getConfig(),{
-               address: spenderAddress,
+               address: CA,
                abi: QuiverPayManagerABI,
                functionName: "getNodeInfo",
                args: [userData?.walletAddr],
@@ -206,7 +203,7 @@ const index:React.FC=()=>{
 
      const getNodeInfo=async ()=>{
           const nodeInfo:any=await readContract(getConfig(),{
-               address: spenderAddress,
+               address: CA,
                abi: QuiverPayManagerABI,
                functionName: "getNodeInfo",
                args: [userData?.walletAddr],
@@ -220,7 +217,7 @@ const index:React.FC=()=>{
     
       const unStake=async ()=>{
          const tx= await writeContractAsync({
-               address: spenderAddress,
+               address: CA,
                abi: QuiverPayManagerABI,
                functionName: "unStake",
                args: [],
@@ -230,7 +227,7 @@ const index:React.FC=()=>{
                    });
            setIsStake(false);
               const nodeInfo:any=await readContract(getConfig(),{
-               address: spenderAddress,
+               address: CA,
                abi: QuiverPayManagerABI,
                functionName: "getNodeInfo",
                args: [userData?.walletAddr],

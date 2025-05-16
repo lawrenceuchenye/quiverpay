@@ -1,0 +1,7 @@
+{
+  "transactions": [
+    {
+      "rpc": "wss://base-sepolia.drpc.org"
+    }
+  ]
+}

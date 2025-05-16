@@ -5,7 +5,7 @@ import React,{useEffect, useState} from "react";
 import { motion as m } from "framer-motion";
 import axios from "axios";
 import QuiverLogo from "../../src/assets/Frame 68.svg";
-import { dataPlanDB_NG,NG_PREPAID_PROVIDERS} from "../utils";
+import { dataPlanDB_NG,NG_PREPAID_PROVIDERS,CA} from "../utils";
 import useQuiverStore from "../../store";
 
 import { useWriteContract } from 'wagmi';
@@ -41,7 +41,7 @@ interface Props{
     type:string|null;
 }
 
-const spenderAddress = "0x28A485c0c896D77F7821027EaD8b24bAe1DFBC51";
+const spenderAddress = "0x47bCFD7D078FDFd696F199911F8a54f2F9B81B81";
 const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 // Define your ERC20 contract's ABI
@@ -320,7 +320,7 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
        address: tokenAddress,
        abi: erc20Abi,
        functionName: 'approve',
-       args: [spenderAddress, amountToApprove],
+       args: [CA, amountToApprove],
       });
     }
       
@@ -328,8 +328,8 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
 
     const createOrder= async ()=>{
       await handleApprove();
-      const tx=await writeContractAsync({
-       address: spenderAddress,
+      const tx:any=await writeContractAsync({
+       address: CA,
        abi: QuiverPayManagerABI,
        functionName: 'createOrder',
        args: [amountToApprove, serviceName],
@@ -338,8 +338,9 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
       const receipt = await waitForTransactionReceipt(getConfig(), {
          hash: tx,
       });
-      
+
       setIsProcessing(true); 
+      console.log(tx);
       axios.post("http://127.0.0.1:8000/api/create_tx/",{...billInfo,usdc_amount:roundToThree(parseFloat(billInfo.usdc_amount)+0.2),fiat_amount:parseFloat(billInfo.fiat_amount),type:serviceName});
       setBillInfo(null);
       console.log(tx);

@@ -10,7 +10,8 @@ class Airtime(models.Model):
     amount=models.IntegerField()
     issuedBy=models.CharField(max_length=255)
     settledBy=models.CharField(max_length=255,blank=True)
-    isOpen=models.BooleanField(default=False)
+    isOpen=models.BooleanField(default=True)
+    orderId=models.IntegerField(default=0)
 
 class Data(models.Model):
     network=models.CharField(max_length=255)
@@ -21,7 +22,8 @@ class Data(models.Model):
     amount=models.IntegerField()
     issuedBy=models.CharField(max_length=255)
     settledBy=models.CharField(max_length=255,null=True,blank=True)
-    isOpen=models.BooleanField(default=False)
+    isOpen=models.BooleanField(default=True)
+    orderId=models.IntegerField(default=0)
 
 
 class Electricity(models.Model):
@@ -33,7 +35,8 @@ class Electricity(models.Model):
     amount=models.IntegerField()
     issuedBy=models.CharField(max_length=255)
     settledBy=models.CharField(max_length=255,null=True,blank=True)
-    isOpen=models.BooleanField(default=False)
+    isOpen=models.BooleanField(default=True)
+    orderId=models.IntegerField(default=0)
 
 
 class Transaction(models.Model):

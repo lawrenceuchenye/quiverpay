@@ -16,9 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from django.conf import settings
+from .views import SPA_view,ReactAppView
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/",include("userprofile.urls")),
-     path("api/",include("transaction.urls"))
-]
+    path("api/",include("transaction.urls")),
+     path("",SPA_view,name="home")
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
