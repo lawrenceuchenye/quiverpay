@@ -19,6 +19,7 @@ function App() {
 
    const [isMobile,setIsMobile]=useState<boolean>(false);
   const connectClicked=useQuiverStore((state)=>state.connectClicked);
+   const isStake=useQuiverStore((state)=>state.isStake);
   const isPay=useQuiverStore((state)=>state.isPay);
   const billType=useQuiverStore((state)=>state.billType);
   const billInfo=useQuiverStore((state)=>state.billInfo);
@@ -40,7 +41,7 @@ function App() {
      </Routes>
    
     </div>
-    <StakeETH />
+    { isStake && <StakeETH /> }
         { isPay && <Send type={billType}/>}
        { (billInfo && isPay) && <Summary billInfo={billInfo} serviceName={billType}/> }
        { isMobile && <MobileNav /> }

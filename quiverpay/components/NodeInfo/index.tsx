@@ -61,7 +61,8 @@ const UserMoneyCard:React.FC=()=>{
     const [usdcBal,setUSDCBal]=useState<number|null>(null);
     const [baseName,setBaseName]=useState<any|null>(null);
     const billInfo=useQuiverStore((state)=>state.billInfo);
- 
+    
+
     const getBaseName=async()=>{
       
         const ensName=await getName({
@@ -133,6 +134,8 @@ const NodeInfo:React.FC=()=>{
     const userData=useQuiverStore((state)=>state.userData);
      const [stakedBal,setStakedBal]=useState<number|null>(0);
      const [totalTxs,setTotalTxs]=useState<number|null>();
+     const isStaked=useQuiverStore((state)=>state.isStaked);
+
 
      const getNodeInfo=async ()=>{
           const nodeInfo:any=await readContract(getConfig(),{
@@ -146,15 +149,17 @@ const NodeInfo:React.FC=()=>{
      }
 
      useEffect(()=>{
+       
         getNodeInfo();
-     },[])
+
+     },[isStaked])
 
     
     return(
     <div className="infoCardContainer">
         <div className="infoData">
             <h1>STAKED ETH:</h1>
-            <p>{stakedBal ? `${stakedBal}`: 0} ETH</p>
+            <p>{`${stakedBal}`} ETH</p>
         </div>
         <div className="infoData">
             <h1>LIFETIME EARNING:</h1>
@@ -176,8 +181,11 @@ const NodeInfo:React.FC=()=>{
 
 const index:React.FC=()=>{
      const userData=useQuiverStore((state)=>state.userData);
-    const { writeContractAsync }=useWriteContract();
-
+     const setIsStake=useQuiverStore((state)=> state.setIsStake);
+     const setIsStaked=useQuiverStore((state)=> state.setIsStaked);
+     const isStaked=useQuiverStore((state)=> state.isStaked);
+     
+     const { writeContractAsync }=useWriteContract();
      const [copied,setIsCopied]=useState(false);
     
     const copyToClipboard=(text)=>{
@@ -201,22 +209,36 @@ const index:React.FC=()=>{
                functionName: "getNodeInfo",
                args: [userData?.walletAddr],
              });  
+             if((parseFloat(nodeInfo[0])) > 0){
+              setIsStaked(true);
+             }
              setStakedBal(parseFloat(nodeInfo[0])/10**18);
      }
 
-      const Stake=()=>{
-
-      }
-      
+    
       const unStake=async ()=>{
-          await writeContractAsync({
+         const tx= await writeContractAsync({
                address: spenderAddress,
                abi: QuiverPayManagerABI,
                functionName: "unStake",
                args: [],
              });  
-          
-             setStakedBal(parseFloat(0));
+                await waitForTransactionReceipt(getConfig(), {
+                      hash: tx,
+                   });
+           setIsStake(false);
+              const nodeInfo:any=await readContract(getConfig(),{
+               address: spenderAddress,
+               abi: QuiverPayManagerABI,
+               functionName: "getNodeInfo",
+               args: [userData?.walletAddr],
+             });  
+
+             if((parseFloat(nodeInfo[0])/10**18) <= 0){
+              setIsStaked(false);
+             }
+            
+             setStakedBal(parseFloat(nodeInfo[0])/10**18);
      }
 
 
@@ -243,7 +265,7 @@ const index:React.FC=()=>{
            
              <m.button style={{ opacity:"0.5"}} whileTap={{ scale:1.2 }}>To Wallet <i className="fa-solid fa-wallet"></i></m.button>
              <m.button className="btn2" style={{ background:"oklch(72.3% 0.219 149.579)",opacity:"0.5"}} whileTap={{ scale:1.2 }}>To Bank <i className="fa-solid fa-arrow-right"></i></m.button>
-             <m.button style={{ background:stakedBal > 0 ?  "oklch(63.7% 0.237 25.331)" : "oklch(72.3% 0.219 149.579)" }} whileTap={{ scale:1.2 }} onClick={()=>stakedBal > 0 ? unStake() : Stake()}>{ stakedBal > 0 ? "UNSTAKE" : "STAKE"}</m.button>
+             <m.button style={{ background:isStaked ?  "oklch(63.7% 0.237 25.331)" : "oklch(72.3% 0.219 149.579)" }} whileTap={{ scale:1.2 }} onClick={()=>isStaked  ? unStake() : setIsStake(true)}>{ isStaked  ? "UNSTAKE" : "STAKE"}</m.button>
             </div>
          </div>
                 </div>

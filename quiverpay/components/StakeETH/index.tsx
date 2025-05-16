@@ -1,10 +1,42 @@
 import React, { useEffect } from "react"
 import "./index.css";
 import { useState } from "react";
+import { motion as m } from "framer-motion";
+import useQuiverStore from "../../store";
+import { QuiverPayManagerABI } from "../contract/abi";
+import { readContract,waitForTransactionReceipt } from "wagmi/actions";
+import { parseAbi, parseEther } from "viem";
+import { getConfig } from "../../config"; // your import path may vary
+import { useWriteContract } from "wagmi";
 
+
+
+const spenderAddress = "0x28A485c0c896D77F7821027EaD8b24bAe1DFBC51";
+const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+
+
+
+const erc20Abi = parseAbi([
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function balanceOf(address account) view returns (uint256)",  // ✅ added
+]);
+
+const index:React.FC=()=>{
+
+    const [priceEq,setPriceEQ]=useState<null|any>(null);
+    const [amount,setAmount]=useState<number>(0);
+    const [stakedBal,setStakedBal]=useState<number|null>(null);
+    const userData=useQuiverStore((state)=>state.userData);
+    const setIsStake=useQuiverStore((state)=>state.setIsStake);
+    const setIsStaked=useQuiverStore((state)=>state.setIsStaked);
+    
+    const { writeContractAsync }=useWriteContract();
+    
+    
 const convertEthToFiat=async (ethAmount:number)=>{
-  if (isNaN(ethAmount)) {
-    throw new Error("Invalid ETH amount");
+  if(ethAmount <= 0){
+    return;
   }
 
   try {
@@ -19,36 +51,62 @@ const convertEthToFiat=async (ethAmount:number)=>{
     const usdValue = ethAmount * ethToUsd;
     const ngnValue = ethAmount * ethToNgn;
 
-    return {
+    const eq={
       eth: ethAmount,
       usd: usdValue.toFixed(2),
       ngn: ngnValue.toFixed(2),
     };
+    setPriceEQ(eq);
+    return eq;
   } catch (error) {
     console.error("Error fetching ETH price:", error);
     throw error;
   }
 }
 
-const index:React.FC=()=>{
+    const getNodeInfo=async ()=>{
+          const nodeInfo:any=await readContract(getConfig(),{
+               address: spenderAddress,
+               abi: QuiverPayManagerABI,
+               functionName: "getNodeInfo",
+               args: [userData?.walletAddr],
+             });  
+             setStakedBal(parseFloat(nodeInfo[0])/10**18);
+     }
 
-    const [priceEq,setPriceEQ]=useState<null|any>(null);
-    const [amount,setAmount]=useState<number>(0);
+
+    const Stake=async ()=>{
+      await getNodeInfo();
+      if(stakedBal <=0){
+          const tx=await writeContractAsync({
+               address: spenderAddress,
+               abi: QuiverPayManagerABI,
+               functionName: "stake",
+               value:parseEther(`${amount}`)
+             });  
+                await waitForTransactionReceipt(getConfig(), {
+                      hash: tx,
+                   });
+
+             setIsStake(false);
+             setIsStaked(true);
+        }
+    }
 
     useEffect(()=>{
-    setPriceEQ(convertEthToFiat(amount));
+    convertEthToFiat(amount);
     },[amount]);
 
     return(
-        <div className="stakeOverlay">
-            <div className="depositContainer">
+        <div className="stakeOverlay" onClick={()=>setIsStake(false)}>
+            <m.div className="depositContainer"  initial={{ y:"40px",opacity:0,}} animate={{y:"0px",opacity:1}}  transition={{ delay:0.4,duration: 0.6,    stiffness:100 ,  damping: 5,type:"spring" }} onClick={(e)=>e.stopPropagation()}>
                 <input type="number" step="0.0001" placeholder="ETH amount" onChange={(e)=>setAmount(parseFloat(e.target.value))} />
 
 
                 <p>*You must stake/deposit eth to be able to process transactions.</p>
                { priceEq &&  <p style={{ color:"black"}}>{priceEq.eth} ~ ${priceEq.usd} ~ NGN {priceEq.ngn} </p> }
-                <button>Stake/Deposite ETH</button>
-            </div>
+                <m.button whileTap={{ scale:1.1 }} onClick={()=>Stake()}>Stake/Deposite ETH</m.button>
+            </m.div>
         </div>
     )
 }
