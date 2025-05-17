@@ -45,6 +45,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     error MUstBeANodeOperator();
     error OrderAlreadyProccess();
     error NotEnoughUSDCForFund();
+    error ReFundFailed();
 
     constructor(address _stablecoin) Ownable(msg.sender) {
         stablecoin = IERC20(_stablecoin);
@@ -146,12 +147,12 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     }
 
     function refundUser(uint256 orderId) external nonReentrant  {
-        Order memory order = orders[orderId];
+        Order storage order = orders[orderId];
         if(!(nodes[msg.sender].stakedETH > 0)){
             revert MUstBeANodeOperator();
         }
       
-       if(!(!order.fulfilled && !order.refunded)){
+       if(!(!order.fulfilled || !order.refunded)){
          revert OrderAlreadyProccess();
        }
 
@@ -159,21 +160,26 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
         uint256 platformRefundAmountFee=0.05 * 10 ** 6;
 
         // Check if the user's order balance is sufficient to cover the 0.05 USDC subtraction
-        if(order.amount >= (nodeRefundAmountFee+platformRefundAmountFee)){
+        if(!(order.amount >= (nodeRefundAmountFee+platformRefundAmountFee))){
             revert NotEnoughUSDCForFund();
         }
-/*
+
         // Subtract 0.05 USDC from the user's order balance
         order.amount -= nodeRefundAmountFee;
         order.amount -= platformRefundAmountFee;
         feeProfit += platformRefundAmountFee;
 
       // Refund the user the remaining balance
-      /*  uint256 userRefundAmount = order.amount;
-        require(stablecoin.transfer(order.user, userRefundAmount), "User refund failed");
+     
+        require(stablecoin.balanceOf(address(this)) > 0,"Low USDC BALANCE");
+
+        if(!stablecoin.transfer(order.user, order.amount)){
+            revert ReFundFailed();
+        }
+
         // Refund the node operator 0.1 USDC
-        require(stablecoin.transfer(msg.sender, nodeRefundAmountFee), "Node operator refund failed");
-        order.refunded = true;*/
+       require(stablecoin.transfer(msg.sender, nodeRefundAmountFee), "Node operator refund failed");
+        order.refunded = true;
       
         emit OrderRefunded(orderId,msg.sender,order.user);
     }

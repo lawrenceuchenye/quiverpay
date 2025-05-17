@@ -109,7 +109,6 @@ contract QuiverPayManagerTest is Test {
 
         vm.startPrank(node);
         qpm.stake{value: 1 ether}();
-      
         qpm.fulfillOrder(orderId);
         assertTrue(qpm.getOrder(orderId).fulfilled);
         assertEq(qpm.getNode().transactionCount, 1);
