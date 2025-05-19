@@ -11,6 +11,8 @@ class Airtime(models.Model):
     issuedBy=models.CharField(max_length=255)
     settledBy=models.CharField(max_length=255,blank=True)
     isOpen=models.BooleanField(default=True)
+    isReFund=models.BooleanField(default=False)
+    isFulFilled=models.BooleanField(default=False)
     orderId=models.IntegerField(default=0)
 
 class Data(models.Model):
@@ -24,6 +26,8 @@ class Data(models.Model):
     settledBy=models.CharField(max_length=255,null=True,blank=True)
     isOpen=models.BooleanField(default=True)
     orderId=models.IntegerField(default=0)
+    isReFund=models.BooleanField(default=False)
+    isFulFilled=models.BooleanField(default=False)
 
 
 class Electricity(models.Model):
@@ -36,7 +40,10 @@ class Electricity(models.Model):
     issuedBy=models.CharField(max_length=255)
     settledBy=models.CharField(max_length=255,null=True,blank=True)
     isOpen=models.BooleanField(default=True)
+    isReFund=models.BooleanField(default=False)
+    isFulFilled=models.BooleanField(default=False)
     orderId=models.IntegerField(default=0)
+    token=models.CharField(max_length=255,null=True,blank=True)
 
 
 class Transaction(models.Model):

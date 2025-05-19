@@ -10,11 +10,8 @@ import { readContract,waitForTransactionReceipt } from "wagmi/actions";
 import { parseAbi, parseEther } from "viem";
 import { getConfig } from "../../config"; // your import path may vary
 import { useWriteContract } from "wagmi";
+import { CA,TA} from "../utils";
 
-
-
-const spenderAddress = "0x47bCFD7D078FDFd696F199911F8a54f2F9B81B81";
-const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 
 
@@ -68,7 +65,7 @@ const convertEthToFiat=async (ethAmount:number)=>{
 
     const getNodeInfo=async ()=>{
           const nodeInfo:any=await readContract(getConfig(),{
-               address: spenderAddress,
+               address: CA,
                abi: QuiverPayManagerABI,
                functionName: "getNodeInfo",
                args: [userData?.walletAddr],
@@ -81,7 +78,7 @@ const convertEthToFiat=async (ethAmount:number)=>{
       await getNodeInfo();
       if(stakedBal <=0){
           const tx=await writeContractAsync({
-               address: spenderAddress,
+               address: CA,
                abi: QuiverPayManagerABI,
                functionName: "stake",
                value:parseEther(`${amount}`)

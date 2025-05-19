@@ -1,9 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./index.css";
 import { motion as m} from "framer-motion";
+import { useDisconnect } from 'wagmi';
 
 
 const Home:React.FC=()=>{
+    const { disconnect } = useDisconnect();
+
+    useEffect(()=>{
+    disconnect();
+    },[]);
+
     return(
         <div className="parent-hmContainer">
         <div className="main-hmContainer">

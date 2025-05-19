@@ -7,7 +7,7 @@ import UserFinanceInfo from "../../../components/UserFinanceInfo";
 const Dashboard:React.FC=()=>{
     return(
 <div className="userDashboard">
-<UserOverview />
+<UserOverview isNode={false} />
 <UserFinanceInfo />
 </div>
     );

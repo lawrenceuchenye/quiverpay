@@ -73,4 +73,18 @@ We use the Base network for fast, affordable, and secure on-chain activity.
 
 **QuiverPay** makes crypto usable in your everyday life. Just pay and go — no banks needed.
 
+
+🌐 **Live Project**: [https://quiverpay-fe.vercel.app/](https://quiverpay-fe.vercel.app/)
+
 ---
+
+### 📜 Smart Contract
+
+**Contract Address (CA)**: `0x1d8b0d97900319aE0778cE45D67eA45cDaBF602B`
+
+---
+
+### 🔗 Example Transactions
+
+- [Transaction #1](https://basescan.org/tx/0x78373e3d1b015ce9d18a35d01dd8e68387fab24351b05a50bb74c9300b3b5d84)
+- [Transaction #2](https://basescan.org/tx/0x34934264620ff454225ec87d603c7a2fe24d58b5e7790c62ac462fc6de8ea0b8)

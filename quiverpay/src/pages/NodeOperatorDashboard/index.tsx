@@ -8,7 +8,7 @@ import Mempool from "../../../components/Mempool";
 const Dashboard:React.FC=()=>{
     return(
 <div className="userDashboard">
-<UserOverview />
+<UserOverview isNode={true} />
 <div className="dataContainer">
     <Mempool />
     <NodeInfo />

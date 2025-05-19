@@ -5,9 +5,9 @@ import React,{useEffect, useState} from "react";
 import { motion as m } from "framer-motion";
 import axios from "axios";
 import QuiverLogo from "../../src/assets/Frame 68.svg";
-import { dataPlanDB_NG,NG_PREPAID_PROVIDERS,CA} from "../utils";
+import { dataPlanDB_NG,NG_PREPAID_PROVIDERS,CA,API_ENDPOINT} from "../utils";
 import useQuiverStore from "../../store";
-
+import { toast } from 'react-toastify';
 import { useWriteContract } from 'wagmi';
 import { parseAbi } from "viem";
 import { parseUnits } from 'viem'; // to parse token amount correctly
@@ -41,8 +41,6 @@ interface Props{
     type:string|null;
 }
 
-const spenderAddress = "0x28A485c0c896D77F7821027EaD8b24bAe1DFBC51";
-const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 // Define your ERC20 contract's ABI
 const erc20Abi = parseAbi([
@@ -96,35 +94,105 @@ interface summaryProp{
 const Summary:React.FC<summaryProp>=({ billInfo})=>{
   const setIsPay=useQuiverStore((state)=>state.setIsPay);
   const userData=useQuiverStore((state)=>state.userData);
-
    const amountToApprove = parseUnits(`${billInfo.usdc_amount ? roundToThree(parseFloat(billInfo.usdc_amount)+0.25) : 0}`, 6); // 1000 tokens with 18 decimals
    const { writeContractAsync } = useWriteContract();
    const [isProcessing,setIsProcessing]=useState(false);
+   const [electrcityToken,setElectricityToken]=useState<null|string>(null);
+
     const setBillInfo=useQuiverStore((state)=>state.setBillInfo);
   
     const reFund= async ()=>{
       console.log(billInfo.orderId);
+      
+
       const tx=await writeContractAsync({
        address: CA,
        abi: QuiverPayManagerABI,
        functionName: 'refundUser',
        args: [billInfo.orderId],
       });
+
+      const receipt = await waitForTransactionReceipt(getConfig(), {
+         hash: tx,
+      });
+ 
+      
+      await axios.post(`${API_ENDPOINT}/api/handle_tx/`,{
+        type:billInfo.type,
+        id:billInfo.orderId,
+        isRefund:true,
+        isFulfilled:false
+      });
+
+      toast.success("REFUND SUCCSSFUL", {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            });
+
+        toast.error("FALSE REFUND WILL RESULT IN YOUR STAKED ETH BEING SLASHED", {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            });
+            
+      
+      setBillInfo(null);
       
     }
        const fulfillOrder= async ()=>{
-      const tx=await writeContractAsync({
+            const tx=await writeContractAsync({
        address:CA,
        abi: QuiverPayManagerABI,
        functionName: 'fulfillOrder',
        args: [billInfo.orderId],
       });
       
-      const receipt = await waitForTransactionReceipt(getConfig(), {
+     const receipt = await waitForTransactionReceipt(getConfig(), {
          hash: tx,
       });
-      
-      
+ 
+        await axios.post(`${API_ENDPOINT}/api/handle_tx/`,{
+        type:billInfo.type,
+        id:billInfo.orderId,
+        isRefund:false,
+        isFulfilled:true,
+        token:electrcityToken
+      });
+
+      toast.success("ORDER COMPLETED", {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            });
+
+       toast.error("FALSE FULFILL WILL RESULT IN YOUR STAKED ETH BEING SLASHED", {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            });
+            
+        setBillInfo(null);
     }
 
    
@@ -198,6 +266,9 @@ const Summary:React.FC<summaryProp>=({ billInfo})=>{
                          <h4>Amount</h4>
                             <p>@NGN {billInfo.fiat_amount} ~ {roundToThree(billInfo.usdc_amount-0.2)} USDC</p>
                         </div>
+                        <div className="meter_token">
+                        <input type="text" placeholder="Electricity Token" onChange={(e)=>setElectricityToken(e.target.value)} />
+                        </div>
                         </div>
                 )}
 
@@ -212,9 +283,9 @@ const Summary:React.FC<summaryProp>=({ billInfo})=>{
                       Drop
                     </m.button>
                     <m.button  whileTap={{ scale:1.1 }} onClick={()=>reFund()}>
-                      ReFund +0.05 USDC
+                      ReFund +0.1 USDC
                     </m.button>
-                    <m.button  whileTap={{ scale:1.1 }}>
+                    <m.button  whileTap={{ scale:1.1 }}  onClick={()=>fulfillOrder()}>
                       Success
                     </m.button>
                    </div>

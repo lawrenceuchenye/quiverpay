@@ -6,6 +6,7 @@ import './index.css'
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.tsx'
 import OnChainKitWrapper from './onChainKitWrapper.tsx';
+import { ToastContainer } from 'react-toastify';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -21,6 +22,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
     <OnChainKitWrapper>
     <App />
+    <ToastContainer />
     </OnChainKitWrapper>
       
     </BrowserRouter>

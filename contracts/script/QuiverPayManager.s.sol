@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Script, console} from "forge-std/Script.sol";
+import {Script } from "forge-std/Script.sol";
 import {QuiverPayManager} from "../src/QuiverPayManager.sol";
 
 contract QuiverPayManagerScript is Script {
     QuiverPayManager public QpayManager;
-    address supportedToken=0x036CbD53842c5426634e7929541eC2318f3dCF7e;
+    address supportedToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
 
     function setUp() public {}
 

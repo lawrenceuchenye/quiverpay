@@ -32,3 +32,15 @@
 .btnActionContainer button:nth-child(3){
     background: oklch(79.2% 0.209 151.711);
 }
+
+.meter_token input{
+      font-family: "Poppins";
+    border: 0px solid #2e2e2e;
+    border-radius: 8px;
+    width:100%;
+    margin: 20px 0;
+    margin-bottom:10px;
+    padding:10px 5px;
+    outline: none;
+    background: oklch(96.8% 0.007 247.896);
+}

@@ -8,13 +8,14 @@ import { coinbaseWallet, injected } from 'wagmi/connectors'
 import { useConnect,useDisconnect,Connector } from 'wagmi';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-
+import {API_ENDPOINT} from "../utils";
 
 const index:React.FC=()=>{
     const [useEOAWallet,setUseEOAWallet]=useState(false);
     const setConnectClicked=useQuiverStore(state=>state.setConnectClicked);
     const setUserData=useQuiverStore(state=>state.setUserData);
     const [role,setRole]=useState<string | null>(null);
+    const [connectBtnHit,setConnectBtnHit]=useState<boolean>(false);
     const { disconnect } = useDisconnect()
     const { connectAsync,connectors,status }=useConnect();
 
@@ -27,11 +28,13 @@ const index:React.FC=()=>{
 
     
     const connectWallet=async (role:string)=>{
-   
-      setRole(role);
+
+        setRole(role);
+        setConnectBtnHit(true);
         disconnect();
         const { accounts,chainId}=await connectAsync({ connector:useEOAWallet ? injected(): coinbaseWalletConnector});
-        axios.post("http://127.0.0.1:8000/api/create_user/",{
+        console.log(accounts);
+        axios.post(`${API_ENDPOINT}/api/create_user/`,{
           walletAddr: accounts[0],
           role:role
        }) .then(function (response) {
@@ -73,8 +76,8 @@ const index:React.FC=()=>{
     </div>
    
   <div className="roleBtnContainer">
-    <m.h1 onClick={()=>connectWallet("REG_USER")} whileTap={{scale:1.2}}>Spend Stables Frictionlessly <i className="fa-solid fa-credit-card"></i></m.h1>
-    <m.h1 onClick={()=>connectWallet("NODE_USER")} whileTap={{ scale:1.2}}>Become a Node and Earn USDC <i className="fas fa-hand-holding-usd"></i></m.h1>
+    <m.h1 onClick={()=>!connectBtnHit && connectWallet("REG_USER")} whileTap={{scale:1.2}}>Spend Stables Frictionlessly <i className="fa-solid fa-credit-card"></i></m.h1>
+    <m.h1 onClick={()=>!connectBtnHit && connectWallet("NODE_USER")} whileTap={{ scale:1.2}}>Become a Node and Earn USDC <i className="fas fa-hand-holding-usd"></i></m.h1>
   </div>
 
   <p className="info">*Click outside the form to close.</p>

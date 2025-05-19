@@ -10,7 +10,7 @@ import useQuiverStore from "../../store";
 import { QuiverPayManagerABI} from "../contract/abi";
 import { readContract,waitForTransactionReceipt} from "wagmi/actions";
 import { parseAbi } from "viem";
-import { getConfig } from "../../config"; // your import path may vary
+import { getConfig } from "../../config";
 import { useWriteContract } from "wagmi";
 import {CA,TA} from "../utils";
 
@@ -55,6 +55,11 @@ const erc20Abi = parseAbi([
   "function balanceOf(address account) view returns (uint256)",  // ✅ added
 ]);
 
+
+const roundToThree=(num)=>{
+    return Math.round(num * 1000) / 1000;
+  }
+
 const UserMoneyCard:React.FC=()=>{
     const userData=useQuiverStore((state)=>state.userData);
     const [usdcBal,setUSDCBal]=useState<number|null>(null);
@@ -97,7 +102,6 @@ const UserMoneyCard:React.FC=()=>{
       },[]);
 
       useEffect(()=>{
-        console.log("Called");
        getUSDBal();
       },[billInfo]);
 
@@ -114,7 +118,7 @@ const UserMoneyCard:React.FC=()=>{
             </div>
             <h2>{formatWalletAddress(userData?.walletAddr)}</h2>
             <div className="cardInfo-2">
-            <h3>{ usdcBal ? `${usdcBal}` : "****"} USDC</h3>
+            <h3>{ usdcBal ? `${roundToThree(usdcBal)}` : "****"} USDC</h3>
             <h3>{userData?.reg_date}</h3>
             </div>
             <p>*Only USDC stablecoin is currently supported.</p>
@@ -132,7 +136,8 @@ const UserMoneyCard:React.FC=()=>{
 const NodeInfo:React.FC=()=>{
     const userData=useQuiverStore((state)=>state.userData);
      const [stakedBal,setStakedBal]=useState<number|null>(0);
-     const [totalTxs,setTotalTxs]=useState<number|null>();
+     const [totalTxs,setTotalTxs]=useState<number|null>(null);
+     const [fullFilledTxsEarning,setfullFilledTxsEarning]=useState<number|null>(null);
      const isStaked=useQuiverStore((state)=>state.isStaked);
 
 
@@ -144,7 +149,8 @@ const NodeInfo:React.FC=()=>{
                args: [userData?.walletAddr],
              });  
              setStakedBal(parseFloat(nodeInfo[0])/10**18);
-              setTotalTxs(parseInt(nodeInfo[1]));
+             setTotalTxs(parseInt(nodeInfo[1]));
+             setfullFilledTxsEarning(parseInt(nodeInfo[2])/10**6);
      }
 
      useEffect(()=>{
@@ -161,11 +167,11 @@ const NodeInfo:React.FC=()=>{
             <p>{`${stakedBal}`} ETH</p>
         </div>
         <div className="infoData">
-            <h1>LIFETIME EARNING:</h1>
-            <p>100 USDC</p>
+            <h1>FULLFILLED TX EARNINGs:</h1>
+            <p>{fullFilledTxsEarning  ? `${fullFilledTxsEarning}` : 0 }</p>
         </div>
         <div className="infoData">
-            <h1>LIFETIME TRANSACTIONS</h1>
+            <h1>FULLFILLED TRANSACTIONS</h1>
             <p>{totalTxs  ? `${totalTxs}` : 0 }</p>
         </div>
            <div className="blob">
@@ -264,7 +270,7 @@ const index:React.FC=()=>{
            
              <m.button style={{ opacity:"0.5"}} whileTap={{ scale:1.2 }}>To Wallet <i className="fa-solid fa-wallet"></i></m.button>
              <m.button className="btn2" style={{ background:"oklch(72.3% 0.219 149.579)",opacity:"0.5"}} whileTap={{ scale:1.2 }}>To Bank <i className="fa-solid fa-arrow-right"></i></m.button>
-             <m.button style={{ background:isStaked ?  "oklch(63.7% 0.237 25.331)" : "oklch(72.3% 0.219 149.579)" }} whileTap={{ scale:1.2 }} onClick={()=>isStaked  ? unStake() : setIsStake(true)}>{ isStaked  ? "UNSTAKE" : "STAKE"}</m.button>
+             <m.button style={{ background:isStaked ?  "oklch(63.7% 0.237 25.331)" : "oklch(72.3% 0.219 149.579)" }} whileTap={{ scale:1.2 }} onClick={()=>isStaked  ? unStake() : setIsStake(true)}>{ isStaked  ? "UNSTAKE" : "STAKE"} <i style={{ left:"8px"}} className="fa-brands fa-ethereum"></i></m.button>
             </div>
          </div>
                 </div>

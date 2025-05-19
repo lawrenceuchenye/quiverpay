@@ -5,12 +5,11 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import {Test, console} from "forge-std/Test.sol";
-
 contract QuiverPayManager is ReentrancyGuard, Ownable {
     IERC20 public stablecoin;
     address public supportedToken;
     uint256 public feeProfit=0;
+    uint256 public slashedEthBal=0;
     uint256 totalUSDCHeld=0;
 
     struct Order {
@@ -44,7 +43,8 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
     error NotEnoughUSDC();
     error MUstBeANodeOperator();
     error OrderAlreadyProccess();
-    error NotEnoughUSDCForFund();
+    error NotEnoughUSDCForReFund();
+    error NotEnoughUSDCForContractReFund();
     error ReFundFailed();
 
     constructor(address _stablecoin) Ownable(msg.sender) {
@@ -54,6 +54,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
 
     function slash(address node_addr) external onlyOwner{
         require(nodes[msg.sender].stakedETH > 0,"Address is not a Node");
+        slashedEthBal+=nodes[msg.sender].stakedETH/2;
         nodes[msg.sender].stakedETH=nodes[msg.sender].stakedETH/2;
         emit NodeSlashed(node_addr);
     }
@@ -106,18 +107,19 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
          // Optional: Check allowance first (for user clarity)
         uint256 allowance = stablecoin.allowance(msg.sender, address(this));
         require(allowance >= amount, "Insufficient allowance");
-        console.log(stablecoin.balanceOf(msg.sender),amount);
+      
         if(stablecoin.balanceOf(msg.sender) < amount){
             revert NotEnoughUSDC();
         }
         require(stablecoin.transferFrom(msg.sender, address(this), amount), "Transfer failed");
-        orders[orderCounter] = Order({
+        Order memory order= Order({
             user: msg.sender,
             amount: amount,
             fulfilled: false,
             refunded: false,
             orderType:orderType
         });
+        orders[orderCounter]=order;
         userOrders[msg.sender].push(orderCounter);
         emit OrderCreated(orderCounter, msg.sender, amount,orderType);
         orderCounter++;
@@ -127,17 +129,40 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
 
     function fulfillOrder(uint256 orderId) external {
         Order storage order = orders[orderId];
-        require(nodes[msg.sender].stakedETH > 0,"Must Be Node Operator Stake ETH To Become One");
-        require(!order.fulfilled && !order.refunded, "Order already processed");
-        uint256 platformFee = 0.05 * 10**6;  // 0.05 USDC (6 decimals for USDC)
-        require(order.amount >= platformFee, "Insufficient balance to cover node refund");
+        if(!(nodes[msg.sender].stakedETH > 0)){
+            revert MUstBeANodeOperator();
+        }
+      
+       if((order.fulfilled || order.refunded)){
+         revert OrderAlreadyProccess();
+       }
+
+        uint256 nodeRefundAmountFee= 0.2 * 10 ** 6;  // 0.05 USDC (6 decimals for USDC)
+        uint256 platformRefundAmountFee=0.05 * 10 ** 6;
+
+        // Check if the user's order balance is sufficient to cover the 0.05 USDC subtraction
+        if(!(order.amount >= (nodeRefundAmountFee+platformRefundAmountFee))){
+            revert NotEnoughUSDCForReFund();
+        }
+
         // Subtract 0.05 USDC from the user's order balance
-        order.amount-=platformFee;
-        feeProfit+=platformFee;
-        order.fulfilled = true;
+        order.amount -= nodeRefundAmountFee;
+        order.amount -= platformRefundAmountFee;
+        feeProfit += platformRefundAmountFee;
+
+      // Refund the user the remaining balance
+     
+        if(!(stablecoin.balanceOf(address(this)) > order.amount)){
+            revert NotEnoughUSDCForContractReFund();
+        }
+
+        require(order.user != address(0),"Must Have A User Address");
+
+        // Refund the node operator 0.1 USDC
+        require(stablecoin.transfer(msg.sender, order.amount+nodeRefundAmountFee), "Node operator credit failed");
         nodes[msg.sender].transactionCount++;
         nodes[msg.sender].lifetimeEarning+=order.amount;
-        require(stablecoin.transfer(msg.sender,order.amount), "Node operator credit failed");
+        order.fulfilled = true;
       
         emit OrderFulfilled(orderId,msg.sender,order.user);
     }
@@ -152,7 +177,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
             revert MUstBeANodeOperator();
         }
       
-       if(!(!order.fulfilled || !order.refunded)){
+       if((order.fulfilled || order.refunded)){
          revert OrderAlreadyProccess();
        }
 
@@ -161,7 +186,7 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
 
         // Check if the user's order balance is sufficient to cover the 0.05 USDC subtraction
         if(!(order.amount >= (nodeRefundAmountFee+platformRefundAmountFee))){
-            revert NotEnoughUSDCForFund();
+            revert NotEnoughUSDCForReFund();
         }
 
         // Subtract 0.05 USDC from the user's order balance
@@ -171,28 +196,49 @@ contract QuiverPayManager is ReentrancyGuard, Ownable {
 
       // Refund the user the remaining balance
      
-        require(stablecoin.balanceOf(address(this)) > 0,"Low USDC BALANCE");
+        if(!(stablecoin.balanceOf(address(this)) > order.amount)){
+            revert NotEnoughUSDCForContractReFund();
+        }
+
+        require(order.user != address(0),"Must Have A User Address");
 
         if(!stablecoin.transfer(order.user, order.amount)){
             revert ReFundFailed();
         }
 
         // Refund the node operator 0.1 USDC
-       require(stablecoin.transfer(msg.sender, nodeRefundAmountFee), "Node operator refund failed");
+        require(stablecoin.transfer(msg.sender, nodeRefundAmountFee), "Node operator refund failed");
+
         order.refunded = true;
       
         emit OrderRefunded(orderId,msg.sender,order.user);
     }
 
-    function takeProfit() public onlyOwner{
-           feeProfit=0;
-           require(stablecoin.transfer(msg.sender, feeProfit), "Node operator refund failed");
+
+    function takeProfit() external onlyOwner {
+    uint256 amount = feeProfit;
+    uint256 amountEth=slashedEthBal;
+
+    require(amount > 0, "No profits to withdraw");
+
+    feeProfit = 0; 
+    slashedEthBal=0;
+
+    bool success = stablecoin.transfer(msg.sender, amount);
+    if (amountEth > 0) {
+        payable(owner()).transfer(amountEth);
     }
 
-    function getFeeProfit() external returns(uint256){
+    require(success, "Transfer failed");
+}
+
+    function getFeeProfit() external view returns(uint256){
         return feeProfit;
     }
 
+   function getUSDCBal() public view returns(uint256){
+      return  stablecoin.balanceOf(address(this));
+   }
 
     function getUserOrders(address user) external view returns (uint256[] memory) {
         return userOrders[user];

@@ -5,7 +5,7 @@ import React,{useEffect, useState} from "react";
 import { motion as m } from "framer-motion";
 import axios from "axios";
 import QuiverLogo from "../../src/assets/Frame 68.svg";
-import { dataPlanDB_NG,NG_PREPAID_PROVIDERS,CA} from "../utils";
+import { dataPlanDB_NG,NG_PREPAID_PROVIDERS,CA,TA,API_ENDPOINT} from "../utils";
 import useQuiverStore from "../../store";
 
 import { useWriteContract } from 'wagmi';
@@ -14,7 +14,9 @@ import { parseUnits } from 'viem'; // to parse token amount correctly
 import { QuiverPayManagerABI } from "../contract/abi";
 import { readContract,waitForTransactionReceipt } from "wagmi/actions";
 
-import { getConfig } from "../../config"; // your import path may vary
+import { getConfig } from "../../config"; 
+
+import { toast } from 'react-toastify';
 
 const roundToThree=(num)=>{
     return Math.round(num * 1000) / 1000;
@@ -41,8 +43,6 @@ interface Props{
     type:string|null;
 }
 
-const spenderAddress = "0x47bCFD7D078FDFd696F199911F8a54f2F9B81B81";
-const tokenAddress = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 // Define your ERC20 contract's ABI
 const erc20Abi = parseAbi([
@@ -61,7 +61,7 @@ const Send:React.FC<Props>=({ type })=>{
     const [activeNetworkType,setActiveNetworkType]=useState("DAILY");
     const [meterNumber,setMeterNumber]=useState<null|string>(null);
     const [meterOwner,setMeterOwner]=useState<null|string>(null);
-    const [elctricityProvider,setElectricityProvider]=useState<null|string>("IBADAN ELECTRICITY");
+    const [elctricityProvider,setElectricityProvider]=useState<string>("IBADAN ELECTRICITY");
     const setBillInfo=useQuiverStore((state)=>state.setBillInfo);
     const setIsPay=useQuiverStore((state)=>state.setIsPay);
     const userData=useQuiverStore((state)=>state.userData); 
@@ -70,7 +70,7 @@ const Send:React.FC<Props>=({ type })=>{
      const getUSDBal=async ()=>{
     
            const usdc_Bal:string=await readContract(getConfig(),{
-                   address: tokenAddress,
+                   address: TA,
                    abi: erc20Abi,
                    functionName: "balanceOf",
                    args: [userData?.walletAddr],
@@ -248,6 +248,7 @@ const Send:React.FC<Props>=({ type })=>{
                  type=="Data" ?  {network:activeNetwork,plan:activeNetworkType,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr,phone_number:to_str(phoneNumber)} :
                    {provider:elctricityProvider,meter_number:meterNumber,meter_owner:meterOwner,fiat_amount:fiatAmountToSend,usdc_amount: to_str(roundToThree(fiatAmountToSend/pricingData)),amount:fiatAmountToSend,issuer_address:userData?.walletAddr} );
                    getUSDBal();
+                  
                    }}>CONFIRM</m.button>
               
                <p style={{ color:"oklch(70.4% 0.04 256.788)"}}>*Tap outside the form to exit</p>
@@ -297,32 +298,55 @@ interface summaryProp{
 const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
   const setIsPay=useQuiverStore((state)=>state.setIsPay);
   const userData=useQuiverStore((state)=>state.userData);
-
+   const [orderStatus,setOrderStatus]=useState<any|null>(null);
+   const [dbOrderId,setDBOrderId]=useState<null|number>(null);
    const amountToApprove = parseUnits(`${billInfo.usdc_amount ? roundToThree(parseFloat(billInfo.usdc_amount)+0.25) : 0}`, 6); // 1000 tokens with 18 decimals
    const { writeContractAsync } = useWriteContract();
    const [isProcessing,setIsProcessing]=useState(false);
-    const setBillInfo=useQuiverStore((state)=>state.setBillInfo);
-  
+   const setBillInfo=useQuiverStore((state)=>state.setBillInfo);
+
     const handleApprove=async ()=>{
       console.log(userData?.walletAddr);
 
    // Check the existing allowance
      const allowance = await readContract(getConfig(),{
-         address: tokenAddress,
+         address: TA,
          abi: erc20Abi,
          functionName: "allowance",
-         args: [userData?.walletAddr, spenderAddress],
+         args: [userData?.walletAddr, CA],
        });
 
 
   if(allowance < amountToApprove){
+        toast.info("AWAITING APPROVAL", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+                 
     const tx=await writeContractAsync({
-       address: tokenAddress,
+       address: TA,
        abi: erc20Abi,
        functionName: 'approve',
        args: [CA, amountToApprove],
       });
     }
+
+     toast.success("APPROVAL GRANTED", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
       
     }
 
@@ -341,13 +365,59 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
 
       setIsProcessing(true); 
       console.log(tx);
-      axios.post("http://127.0.0.1:8000/api/create_tx/",{...billInfo,usdc_amount:roundToThree(parseFloat(billInfo.usdc_amount)+0.2),fiat_amount:parseFloat(billInfo.fiat_amount),type:serviceName});
-      setBillInfo(null);
+      const res=await axios.post(`${API_ENDPOINT}/api/create_tx/`,{...billInfo,usdc_amount:roundToThree(parseFloat(billInfo.usdc_amount)+0.2),fiat_amount:parseFloat(billInfo.fiat_amount),type:serviceName});
+       toast.success("TRANSACTION SENT", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      console.log(res.data["orderId"]);
+      let txInterval=setInterval(async ()=>{
+        const orderStatus=await axios.post(`${API_ENDPOINT}/api/get_tx_status/`,{
+          id:res.data["orderId"],
+          type:serviceName
+        });
+        setOrderStatus(orderStatus.data);
+        if(orderStatus.isRefund || orderStatus.isFulfilled){
+          if(orderStatus.isFulfilled){
+            clearInterval(txInterval);
+           toast.success("TRANSACTION SUCCESS", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });}
+       if(orderStatus.isRefund){
+        clearInterval(txInterval);
+           toast.error("TRANSACTION REFUNDED", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });}
+        setBillInfo(null);
+
+        }
+      },10000);
+
       console.log(tx);
     }
 
     return(
-        <div className="overlays-Container">
+        <div className="overlays-Container" onClick={()=> orderStatus && setBillInfo(null)}>
             <m.div  initial={{ y:"40px",opacity:0,}} animate={{y:"0px",opacity:1}}  transition={{ delay:0.4,duration: 0.6,    stiffness:100 ,  damping: 5,type:"spring" }} className="summaryForm" onClick={(e)=>e.stopPropagation()}>
                 <div className="sfHeader">
                     <img src={QuiverLogo} />
@@ -436,9 +506,10 @@ const Summary:React.FC<summaryProp>=({ billInfo,serviceName})=>{
                  </div>
                    <hr />
              <div className="btn-container">
-          <m.button whileTap={{ scale:1.2}} onClick={()=>!isProcessing && createOrder()}>{ isProcessing ? "Processing 1-5 mins." : "Pay" }</m.button>
+          <m.button whileTap={{ scale:1.2}} onClick={()=>!isProcessing && createOrder()}>{ isProcessing ? orderStatus ? orderStatus.isFulFilled ? "USDC ORDER SUCCESS" : orderStatus.isRefund ? "BAD DATA USDC REFUND SUCCESS": "Processing 1-5 mins." : "Processing 1-5 mins." : "Pay" }</m.button>
           { !isProcessing && (<button  onClick={()=>setBillInfo(null)}>EDIT <i className="fas fa-edit"></i></button>)}
              </div>
+             <p>*Please click outside the container to exit</p>
                 </m.div>
          </div>
     )

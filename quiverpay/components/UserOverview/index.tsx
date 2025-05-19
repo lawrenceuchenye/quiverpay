@@ -24,15 +24,15 @@ const ServiceStats:React.FC<ServiceStatProps>=({ serviceName,Icon,color,amount})
           switch(serviceName){
             case "Airtime":
                 const resa=await axios.post("http://127.0.0.1:8000/api/wallet_airtime_tx/",{"walletAddr":userData?.walletAddr});
-                setPercentage((JSON.parse(resa.data.data).length/MAX_BILLS_OVERFLOW)*100);
+                setPercentage((resa.data.data.length/MAX_BILLS_OVERFLOW)*100);
                 break;
             case "Data":
                 const resdt=await axios.post("http://127.0.0.1:8000/api/wallet_data_tx/",{"walletAddr":userData?.walletAddr});
-                setPercentage((JSON.parse(resdt.data.data).length/MAX_BILLS_OVERFLOW)*100);
+                setPercentage((resdt.data.data.length/MAX_BILLS_OVERFLOW)*100);
                 break;
             case "Electricity":
                 const rese=await axios.post("http://127.0.0.1:8000/api/wallet_electricity_tx/",{"walletAddr":userData?.walletAddr});
-                setPercentage((JSON.parse(rese.data.data).length/MAX_BILLS_OVERFLOW)*100);
+                setPercentage((rese.data.data.length/MAX_BILLS_OVERFLOW)*100);
                 break;   
             default:
                 console.log("Nothing");
@@ -53,17 +53,17 @@ const ServiceStats:React.FC<ServiceStatProps>=({ serviceName,Icon,color,amount})
      );
 }
 
-const Overview:React.FC=()=>{
+const Overview:React.FC<{isNode:boolean}>=({ isNode=false })=>{
      return(
-        <div className="ovContainer">
-            <h1>Overview</h1>
+        <div className="ovContainer" style={{ marginBottom:isNode && "8%"}}>
+            <h1>#Overview</h1>
             <div className="insideOvContainer">
-                <p>What's eating your budget?</p>
+               { isNode ?  <p>Transaction Stats</p> :  <p>What's eating your budget?</p> }
                 <ServiceStats serviceName="Airtime" Icon={<i className="fa-solid fa-sim-card" style={{ color:`${colors[0]}`}} ></i>} color={colors[0]} amount={50}/>
                 <ServiceStats serviceName="Data" Icon={<i className="fa-solid fa-wifi" style={{ color:`${colors[1]}`}}></i>} color={colors[1]} amount={30} />
               <ServiceStats serviceName="Electricity" Icon={<i className="fas fa-bolt" style={{ color:`${colors[2]}`}}></i>}  color={colors[2]} amount={10}/>
                <ServiceStats serviceName="Tv" Icon={<i className="fa-solid fa-tv" style={{ color:`${colors[3]}`}}></i>}  color={colors[3]}  amount={70}/>
-               <ServiceStats serviceName="Transfers" Icon={<i className="fa-solid fa-money-bill-transfer"  style={{ color:`${colors[4]}`}}></i>} color={colors[4]} amount={40} />
+              { !isNode && <ServiceStats serviceName="Transfers" Icon={<i className="fa-solid fa-money-bill-transfer"  style={{ color:`${colors[4]}`}}></i>} color={colors[4]} amount={40} />}
            </div>
             <p>View transaction history</p>
         </div>

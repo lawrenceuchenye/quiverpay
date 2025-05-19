@@ -1,11 +1,11 @@
 
 import { http, cookieStorage, createConfig, createStorage } from "wagmi";
-import { baseSepolia } from "wagmi/chains"; // add baseSepolia for testing
+import { base } from "wagmi/chains"; // add baseSepolia for testing
 import { coinbaseWallet } from "wagmi/connectors";
 
 export function getConfig() {
   return createConfig({
-    chains: [baseSepolia], // add baseSepolia for testing
+    chains: [base], // add baseSepolia for testing | mainnet time
     connectors: [
       coinbaseWallet({
         appName: "QuiverPay",
@@ -18,7 +18,7 @@ export function getConfig() {
     }),
     ssr: true,
     transports: {
-      [baseSepolia.id]: http(), // add baseSepolia for testing
+      [base.id]: http(), // add baseSepolia for testing
     },
   });
 }
